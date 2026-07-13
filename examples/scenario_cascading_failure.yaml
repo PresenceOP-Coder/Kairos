@@ -1,0 +1,19 @@
+name: payments-db-degradation
+events:
+  - at: 0s
+    proxy: payments-db
+    action: add_toxic
+    toxic: { type: latency, latency_ms: 200, jitter_ms: 50 }
+
+  - at: 30s
+    proxy: payments-db
+    action: add_toxic
+    toxic: { type: bandwidth, rate_kbps: 100 }
+
+  - at: 60s
+    proxy: payments-db
+    action: disable_proxy   # full partition
+
+  - at: 90s
+    proxy: payments-db
+    action: enable_proxy    # recovery

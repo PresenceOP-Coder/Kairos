@@ -1,0 +1,21 @@
+# Binaries
+/bin/
+kairos
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Coverage
+coverage.out
+*.cov
+
+# Env
+.env
