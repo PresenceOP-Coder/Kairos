@@ -26,5 +26,6 @@ func (p *Proxy) Start() error {
 
 	fmt.Printf("[Kairos] Listening on %s\n", p.addr)
 
-	return nil
+	return p.acceptLoop()
 }
+
