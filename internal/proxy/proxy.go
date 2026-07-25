@@ -6,25 +6,27 @@ import (
 )
 
 type Proxy struct {
-	addr     string
+	listenAddr string
+	targerAddr     string
 	listener net.Listener
 }
 
-func New(addr string) *Proxy {
+func New( listnerAddr,targetAddr string) *Proxy {
 	return &Proxy{
-		addr: addr,
+		listenAddr: listnerAddr,
+		targerAddr:targetAddr ,
 	}
 }
 
 func (p *Proxy) Start() error {
-	listener, err := net.Listen("tcp", p.addr)
+	listener, err := net.Listen("tcp", p.listenAddr)
 	if err != nil {
-		return fmt.Errorf("failed to listen on %s: %w", p.addr, err)
+		return fmt.Errorf("failed to listen on %s: %w", p.listenAddr, err)
 	}
 
 	p.listener = listener
 
-	fmt.Printf("[Kairos] Listening on %s\n", p.addr)
+	fmt.Printf("[Kairos] Listening on %s\n", p.listenAddr)
 
 	return p.acceptLoop()
 }

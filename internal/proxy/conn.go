@@ -18,8 +18,18 @@ func (p *Proxy) acceptLoop() error {
 
 }
 
-func (p *Proxy) handleConn(conn net.Conn) {
-	defer conn.Close()
+func (p *Proxy) handleConn(client net.Conn) {
+	defer client.Close()
 
-	fmt.Printf("[Kairos] New connection from %s\n", conn.RemoteAddr())
+	target, err := p.connectTarget()
+
+	if err != nil{
+		 return 
+	}
+
+	defer target.Close()
+
+	fmt.Printf("[Kairos] Client Addr %s\n", client.RemoteAddr())
+	fmt.Printf("[Kairos] Targer Addr %s\n", target.RemoteAddr())
+
 }
