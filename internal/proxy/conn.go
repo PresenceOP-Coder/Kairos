@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"fmt"
+	"io"
 	"net"
+	"sync"
 )
 
 func (p *Proxy) acceptLoop() error {
@@ -31,5 +33,21 @@ func (p *Proxy) handleConn(client net.Conn) {
 
 	fmt.Printf("[Kairos] Client Addr %s\n", client.RemoteAddr())
 	fmt.Printf("[Kairos] Targer Addr %s\n", target.RemoteAddr())
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	go func(){
+		defer wg.Done()
+		io.Copy(target, client)
+	}()
+	go func(){
+		defer wg.Done()
+		io.Copy(client,target)
+	}()
+
+	wg.Wait()
+
 
 }
