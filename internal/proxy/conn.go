@@ -25,8 +25,8 @@ func (p *Proxy) handleConn(client net.Conn) {
 
 	target, err := p.connectTarget()
 
-	if err != nil{
-		 return 
+	if err != nil {
+		return
 	}
 
 	defer target.Close()
@@ -38,16 +38,28 @@ func (p *Proxy) handleConn(client net.Conn) {
 
 	wg.Add(2)
 
-	go func(){
+	go func() {
 		defer wg.Done()
-		io.Copy(target, client)
+
+		_, err := io.Copy(target, client)
+
+		if err == nil {
+			if tcp, ok := target.(*net.TCPConn); ok {
+				_ = tcp.CloseWrite()
+			}
+		}
 	}()
-	go func(){
+	go func() {
 		defer wg.Done()
-		io.Copy(client,target)
+		_, err := io.Copy(client, target)
+
+		if err == nil {
+			if tcp, ok := client.(*net.TCPConn); ok {
+				_ = tcp.CloseWrite()
+			}
+		}
 	}()
 
 	wg.Wait()
-
 
 }
