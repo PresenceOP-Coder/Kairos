@@ -9,13 +9,22 @@ type Proxy struct {
 	listenAddr string
 	targerAddr     string
 	listener net.Listener
+
+	registry *Registry
+	nextConnID uint64
 }
 
-func New( listnerAddr,targetAddr string) *Proxy {
+func NewProxy( listnerAddr,targetAddr string) (*Proxy,error){
+	listener , err := net.Listen("tcp",listnerAddr)
+	if err!= nil{
+		return nil,err
+	}
 	return &Proxy{
 		listenAddr: listnerAddr,
 		targerAddr:targetAddr ,
-	}
+		listener: listener,
+		registry: NewRegistry(),
+	},nil
 }
 
 func (p *Proxy) Start() error {

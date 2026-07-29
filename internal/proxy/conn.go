@@ -5,7 +5,16 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
+	"sync/atomic"
 )
+
+type Connection struct {
+	ID        uint64
+	Target    net.Conn
+	Client    net.Conn
+	StartedAt time.Time
+}
 
 func (p *Proxy) acceptLoop() error {
 	for {
@@ -15,7 +24,7 @@ func (p *Proxy) acceptLoop() error {
 			return err
 		}
 
-		p.handleConn(conn)
+		go p.handleConn(conn)
 	}
 
 }
@@ -30,10 +39,22 @@ func (p *Proxy) handleConn(client net.Conn) {
 	}
 
 	defer target.Close()
-
+	
 	fmt.Printf("[Kairos] Client Addr %s\n", client.RemoteAddr())
 	fmt.Printf("[Kairos] Targer Addr %s\n", target.RemoteAddr())
 
+	id := atomic.AddUint64(&p.nextConnID, 1)
+
+	connection := &Connection{
+		ID: id,
+		Target: target,
+		Client: client,
+		StartedAt: time.Now(),
+	}
+
+	p.registry.Add(connection)
+	defer p.registry.Remove(connection.ID)
+	
 	var wg sync.WaitGroup
 
 	wg.Add(2)
@@ -61,5 +82,6 @@ func (p *Proxy) handleConn(client net.Conn) {
 	}()
 
 	wg.Wait()
+
 
 }
