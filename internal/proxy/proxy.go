@@ -7,24 +7,22 @@ import (
 
 type Proxy struct {
 	listenAddr string
-	targerAddr     string
-	listener net.Listener
+	targerAddr string
+	listener   net.Listener
 
-	registry *Registry
+	registry   *Registry
 	nextConnID uint64
 }
 
-func NewProxy( listnerAddr,targetAddr string) (*Proxy,error){
-	listener , err := net.Listen("tcp",listnerAddr)
-	if err!= nil{
-		return nil,err
-	}
+func NewProxy(listnerAddr, targetAddr string) (*Proxy, error) {
 	return &Proxy{
 		listenAddr: listnerAddr,
-		targerAddr:targetAddr ,
-		listener: listener,
-		registry: NewRegistry(),
-	},nil
+		targerAddr: targetAddr,
+		registry:   NewRegistry(),
+	}, nil
+}
+func (p *Proxy) Registry() *Registry {
+	return p.registry
 }
 
 func (p *Proxy) Start() error {
@@ -39,4 +37,3 @@ func (p *Proxy) Start() error {
 
 	return p.acceptLoop()
 }
-
