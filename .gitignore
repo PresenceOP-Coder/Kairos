@@ -1,6 +1,6 @@
 # Binaries
 /bin/
-kairos
+/kairos
 *.exe
 *.exe~
 *.dll
