@@ -16,6 +16,6 @@ func (s *Server) routes() http.Handler {
 
 	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/connections", s.connectionsHandler)
-
+	mux.HandleFunc("/stats", s.statsHandler)
 	return mux
 }

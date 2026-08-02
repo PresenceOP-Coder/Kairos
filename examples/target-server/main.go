@@ -1,27 +1,30 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net"
 )
 
 func main() {
-	listener, err := net.Listen("tcp", ":9000")
+	ln, err := net.Listen("tcp", ":9001")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer listener.Close()
 
-	log.Println("Target server listening on :9000")
+	log.Println("Target listening on :9001")
 
 	for {
-		conn, err := listener.Accept()
+		conn, err := ln.Accept()
 		if err != nil {
-			log.Println(err)
 			continue
 		}
 
-		log.Printf("Accepted connection from %s\n", conn.RemoteAddr())
-		conn.Close()
+		go func(c net.Conn) {
+			defer c.Close()
+
+			// Echo everything back
+			_, _ = io.Copy(c, c)
+		}(conn)
 	}
 }

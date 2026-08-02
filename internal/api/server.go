@@ -8,19 +8,16 @@ import (
 
 type Server struct {
 	registry *proxy.Registry
+	metrics  *proxy.Metrics
 }
 
-
-func NewServer(registry *proxy.Registry) *Server {
+func NewServer(registry *proxy.Registry,metrics *proxy.Metrics) *Server {
 	return &Server{
 		registry: registry,
+		metrics:  metrics,
 	}
 }
 
 func (s *Server) Start(addr string) error {
 	return http.ListenAndServe(addr, s.routes())
 }
-
-
-
-

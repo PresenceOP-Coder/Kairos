@@ -11,6 +11,7 @@ type Proxy struct {
 	listener   net.Listener
 
 	registry   *Registry
+	metrics *Metrics
 	nextConnID uint64
 }
 
@@ -19,6 +20,7 @@ func NewProxy(listnerAddr, targetAddr string) (*Proxy, error) {
 		listenAddr: listnerAddr,
 		targerAddr: targetAddr,
 		registry:   NewRegistry(),
+		metrics: NewMetrics(),
 	}, nil
 }
 func (p *Proxy) Registry() *Registry {
@@ -36,4 +38,8 @@ func (p *Proxy) Start() error {
 	fmt.Printf("[Kairos] Listening on %s\n", p.listenAddr)
 
 	return p.acceptLoop()
+}
+
+func (p *Proxy) Metrics() *Metrics {
+	return p.metrics
 }

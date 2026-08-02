@@ -5,8 +5,8 @@ import (
 	"io"
 	"net"
 	"sync"
-	"time"
 	"sync/atomic"
+	"time"
 )
 
 type Connection struct {
@@ -35,26 +35,30 @@ func (p *Proxy) handleConn(client net.Conn) {
 	target, err := p.connectTarget()
 
 	if err != nil {
+		p.metrics.IncFailedConnections() // <-- here
 		return
 	}
 
+	p.metrics.IncTotalConnections()
+	p.metrics.IncActiveConnections()
+	defer p.metrics.DecActiveConnections()
 	defer target.Close()
-	
+
 	fmt.Printf("[Kairos] Client Addr %s\n", client.RemoteAddr())
 	fmt.Printf("[Kairos] Targer Addr %s\n", target.RemoteAddr())
 
 	id := atomic.AddUint64(&p.nextConnID, 1)
 
 	connection := &Connection{
-		ID: id,
-		Target: target,
-		Client: client,
+		ID:        id,
+		Target:    target,
+		Client:    client,
 		StartedAt: time.Now(),
 	}
 
 	p.registry.Add(connection)
 	defer p.registry.Remove(connection.ID)
-	
+
 	var wg sync.WaitGroup
 
 	wg.Add(2)
@@ -62,7 +66,9 @@ func (p *Proxy) handleConn(client net.Conn) {
 	go func() {
 		defer wg.Done()
 
-		_, err := io.Copy(target, client)
+		n, err := io.Copy(target, client)
+
+		p.metrics.AddBytesSent(uint64(n))
 
 		if err == nil {
 			if tcp, ok := target.(*net.TCPConn); ok {
@@ -72,7 +78,10 @@ func (p *Proxy) handleConn(client net.Conn) {
 	}()
 	go func() {
 		defer wg.Done()
-		_, err := io.Copy(client, target)
+		
+		n, err := io.Copy(target, client)
+
+		p.metrics.AddBytesSent(uint64(n))
 
 		if err == nil {
 			if tcp, ok := client.(*net.TCPConn); ok {
@@ -82,6 +91,5 @@ func (p *Proxy) handleConn(client net.Conn) {
 	}()
 
 	wg.Wait()
-
 
 }
