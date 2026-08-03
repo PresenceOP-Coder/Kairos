@@ -3,6 +3,8 @@ package proxy
 import (
 	"fmt"
 	"net"
+
+	"github.com/shreyasprajapti/kairos/internal/middleware"
 )
 
 type Proxy struct {
@@ -13,7 +15,10 @@ type Proxy struct {
 	registry   *Registry
 	metrics *Metrics
 	nextConnID uint64
+
+	middleware []middleware.Middleware
 }
+
 
 func NewProxy(listnerAddr, targetAddr string) (*Proxy, error) {
 	return &Proxy{
@@ -42,4 +47,8 @@ func (p *Proxy) Start() error {
 
 func (p *Proxy) Metrics() *Metrics {
 	return p.metrics
+}
+
+func(p *Proxy) Use(m middleware.Middleware){
+	p.middleware = append(p.middleware,m)
 }

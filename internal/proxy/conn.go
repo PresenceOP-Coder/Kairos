@@ -59,6 +59,16 @@ func (p *Proxy) handleConn(client net.Conn) {
 	p.registry.Add(connection)
 	defer p.registry.Remove(connection.ID)
 
+
+	wrappedClient := client
+	wrappedTarget:= target
+
+	for _, m := range p.middleware{
+		wrappedClient = m.Wrap(wrappedClient)
+		wrappedTarget = m.Wrap(wrappedTarget)
+	}
+
+
 	var wg sync.WaitGroup
 
 	wg.Add(2)
@@ -66,7 +76,7 @@ func (p *Proxy) handleConn(client net.Conn) {
 	go func() {
 		defer wg.Done()
 
-		n, err := io.Copy(target, client)
+		n, err := io.Copy(wrappedTarget, wrappedClient)
 
 		p.metrics.AddBytesSent(uint64(n))
 
@@ -79,7 +89,7 @@ func (p *Proxy) handleConn(client net.Conn) {
 	go func() {
 		defer wg.Done()
 		
-		n, err := io.Copy(target, client)
+		n, err := io.Copy(wrappedClient, wrappedTarget)
 
 		p.metrics.AddBytesSent(uint64(n))
 

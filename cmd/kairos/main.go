@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
+	"github.com/shreyasprajapti/kairos/internal/middleware"
 	"github.com/shreyasprajapti/kairos/internal/proxy"
 )
 
@@ -26,6 +27,7 @@ func main() {
 
 	log.Printf("Starting Kairos...\n")
 
+	p.Use(middleware.NewLoggingMiddleware())
 	if err := p.Start(); err != nil {
 		log.Fatal(err)
 	}
