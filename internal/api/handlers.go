@@ -35,7 +35,9 @@ func (s *Server) connectionsHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 
@@ -43,7 +45,7 @@ func (s *Server) statsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(
-		s.metrics.Snapshot(),
-	)
+	if err := json.NewEncoder(w).Encode(s.metrics.Snapshot()); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
