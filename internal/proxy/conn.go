@@ -61,12 +61,14 @@ func (p *Proxy) handleConn(client net.Conn) {
 
 
 	wrappedClient := client
-	wrappedTarget:= target
+	wrappedTarget := target
 
-	for _, m := range p.middleware{
+	p.mu.RLock()
+	for _, m := range p.middleware {
 		wrappedClient = m.Wrap(wrappedClient)
 		wrappedTarget = m.Wrap(wrappedTarget)
 	}
+	p.mu.RUnlock()
 
 
 	var wg sync.WaitGroup
@@ -91,7 +93,7 @@ func (p *Proxy) handleConn(client net.Conn) {
 		
 		n, err := io.Copy(wrappedClient, wrappedTarget)
 
-		p.metrics.AddBytesSent(uint64(n))
+		p.metrics.AddBytesReceived(uint64(n))
 
 		if err == nil {
 			if tcp, ok := client.(*net.TCPConn); ok {

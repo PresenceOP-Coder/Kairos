@@ -3,31 +3,33 @@ package proxy
 import (
 	"fmt"
 	"net"
+	"sync"
 
 	"github.com/shreyasprajapti/kairos/internal/middleware"
 )
 
 type Proxy struct {
 	listenAddr string
-	targerAddr string
+	targetAddr string
 	listener   net.Listener
 
 	registry   *Registry
-	metrics *Metrics
+	metrics    *Metrics
 	nextConnID uint64
 
+	mu         sync.RWMutex
 	middleware []middleware.Middleware
 }
 
-
-func NewProxy(listnerAddr, targetAddr string) (*Proxy, error) {
+func NewProxy(listenAddr, targetAddr string) (*Proxy, error) {
 	return &Proxy{
-		listenAddr: listnerAddr,
-		targerAddr: targetAddr,
+		listenAddr: listenAddr,
+		targetAddr: targetAddr,
 		registry:   NewRegistry(),
-		metrics: NewMetrics(),
+		metrics:    NewMetrics(),
 	}, nil
 }
+
 func (p *Proxy) Registry() *Registry {
 	return p.registry
 }
@@ -45,10 +47,20 @@ func (p *Proxy) Start() error {
 	return p.acceptLoop()
 }
 
+// Stop cleanly closes the listener.
+func (p *Proxy) Stop() error {
+	if p.listener != nil {
+		return p.listener.Close()
+	}
+	return nil
+}
+
 func (p *Proxy) Metrics() *Metrics {
 	return p.metrics
 }
 
-func(p *Proxy) Use(m middleware.Middleware){
-	p.middleware = append(p.middleware,m)
+func (p *Proxy) Use(m middleware.Middleware) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.middleware = append(p.middleware, m)
 }

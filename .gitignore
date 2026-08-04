@@ -19,3 +19,6 @@ coverage.out
 
 # Env
 .env
+
+# Developer notes (local only)
+developer_notes.md
