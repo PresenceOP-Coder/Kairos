@@ -47,7 +47,6 @@ func (p *Proxy) Start() error {
 	return p.acceptLoop()
 }
 
-// Stop cleanly closes the listener.
 func (p *Proxy) Stop() error {
 	if p.listener != nil {
 		return p.listener.Close()
