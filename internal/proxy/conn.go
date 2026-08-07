@@ -78,27 +78,31 @@ func (p *Proxy) handleConn(client net.Conn) {
 	go func() {
 		defer wg.Done()
 
-		n, err := io.Copy(wrappedTarget, wrappedClient)
+		n, _ := io.Copy(wrappedTarget, wrappedClient)
 
 		p.metrics.AddBytesSent(uint64(n))
 
-		if err == nil {
-			if tcp, ok := target.(*net.TCPConn); ok {
-				_ = tcp.CloseWrite()
-			}
+		// Always half-close the target write side when done, regardless of error.
+		// This signals EOF to the target so the other goroutine isn't blocked forever.
+		if tcp, ok := target.(*net.TCPConn); ok {
+			_ = tcp.CloseWrite()
+		} else {
+			target.Close()
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		
-		n, err := io.Copy(wrappedClient, wrappedTarget)
+
+		n, _ := io.Copy(wrappedClient, wrappedTarget)
 
 		p.metrics.AddBytesReceived(uint64(n))
 
-		if err == nil {
-			if tcp, ok := client.(*net.TCPConn); ok {
-				_ = tcp.CloseWrite()
-			}
+		// Always half-close the client write side when done, regardless of error.
+		// This signals EOF to the client so the other goroutine isn't blocked forever.
+		if tcp, ok := client.(*net.TCPConn); ok {
+			_ = tcp.CloseWrite()
+		} else {
+			client.Close()
 		}
 	}()
 

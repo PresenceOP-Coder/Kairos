@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"net"
 )
@@ -21,10 +20,20 @@ func main() {
 		}
 
 		go func(c net.Conn) {
-			defer c.Close()
+		defer c.Close()
 
-			// Echo everything back
-			_, _ = io.Copy(c, c)
-		}(conn)
+		buf := make([]byte, 4096)
+		for {
+			n, err := c.Read(buf)
+			if n > 0 {
+				if _, werr := c.Write(buf[:n]); werr != nil {
+					return
+				}
+			}
+			if err != nil {
+				return
+			}
+		}
+	}(conn)
 	}
 }
