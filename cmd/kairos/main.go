@@ -30,6 +30,13 @@ func main() {
 	p.Use(middleware.NewLoggingMiddleware())
 	p.Use(middleware.NewLatencyMiddleware(500 * time.Millisecond))
 	p.Use(middleware.NewBandwidthMiddleware(100 * 1024))
+	p.Use(
+		middleware.NewPacketLossMiddleware(20),
+	)
+	p.Use(middleware.NewJitterMiddleware(
+		100*time.Millisecond,
+		500*time.Millisecond,
+	))
 	if err := p.Start(); err != nil {
 		log.Fatal(err)
 	}
