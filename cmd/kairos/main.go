@@ -28,6 +28,7 @@ func main() {
 
 	log.Printf("Starting Kairos...\n")
 	p.Use(middleware.NewLoggingMiddleware())
+	p.Use(middleware.NewResetMiddleware(5 * time.Second))
 	p.Use(middleware.NewLatencyMiddleware(500 * time.Millisecond))
 	p.Use(middleware.NewBandwidthMiddleware(100 * 1024))
 	p.Use(
