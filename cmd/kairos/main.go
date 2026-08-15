@@ -3,7 +3,6 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
 	"github.com/shreyasprajapti/kairos/internal/config"
@@ -33,16 +32,11 @@ func main() {
 
 	log.Printf("Starting Kairos...\n")
 	p.Use(middleware.NewLoggingMiddleware())
-	p.Use(middleware.NewResetMiddleware(5 * time.Second))
+	p.Use(middleware.NewResetMiddleware(cfg))
 	p.Use(middleware.NewLatencyMiddleware(cfg))
-	p.Use(middleware.NewBandwidthMiddleware(100 * 1024))
-	p.Use(
-		middleware.NewPacketLossMiddleware(20),
-	)
-	p.Use(middleware.NewJitterMiddleware(
-		100*time.Millisecond,
-		500*time.Millisecond,
-	))
+	p.Use(middleware.NewBandwidthMiddleware(cfg))
+	p.Use(middleware.NewPacketLossMiddleware(20))
+	p.Use(middleware.NewJitterMiddleware(cfg))
 	if err := p.Start(); err != nil {
 		log.Fatal(err)
 	}

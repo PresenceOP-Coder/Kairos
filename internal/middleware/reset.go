@@ -3,38 +3,40 @@ package middleware
 import (
 	"net"
 	"time"
+
+	"github.com/shreyasprajapti/kairos/internal/config"
 )
 
 type ResetMiddleware struct {
-	after time.Duration
+	config *config.ChaosConfig
 }
 
-type ResetConn struct{
+type ResetConn struct {
 	net.Conn
-	after time.Duration
 	timer *time.Timer
 }
 
-func NewResetMiddleware(after time.Duration) *ResetMiddleware {
-	return &ResetMiddleware{
-		after: after,
-	}
+func NewResetMiddleware(cfg *config.ChaosConfig) *ResetMiddleware {
+	return &ResetMiddleware{config: cfg}
 }
 
 func (m *ResetMiddleware) Wrap(conn net.Conn) net.Conn {
-	resetConn := &ResetConn{
-		Conn: conn,
-		after: m.after,
+	rc := &ResetConn{Conn: conn}
+
+	enabled, after := m.config.GetReset()
+	if enabled && after > 0 {
+		rc.timer = time.AfterFunc(after, func() {
+			conn.Close()
+		})
 	}
 
-	resetConn.timer = time.AfterFunc(m.after, func() {
-		conn.Close()
-	})
-	return resetConn
+	return rc
 }
 
 func (c *ResetConn) Close() error {
-	c.timer.Stop()
+	if c.timer != nil {
+		c.timer.Stop()
+	}
 
 	return c.Conn.Close()
 }
