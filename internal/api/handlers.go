@@ -75,3 +75,15 @@ func (s *Server)latencyHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 }
+
+func (s *Server) chaosHandler(w http.ResponseWriter, r *http.Request) {
+
+	enabled, delay := s.config.GetLatency()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(ChaosResponse{
+		LatencyEnabled: enabled,
+		LatencyDelayMS: delay.Milliseconds(),
+	})
+}
