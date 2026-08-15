@@ -17,19 +17,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	cfg := config.NewChaosConfig()
+
 	apiServer := api.NewServer(
 		p.Registry(),
 		p.Metrics(),
+		cfg,
 	)
+	
 	go func() {
 		if err := apiServer.Start(":8080"); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	cfg := config.NewChaosConfig()
-
-	
 	log.Printf("Starting Kairos...\n")
 	p.Use(middleware.NewLoggingMiddleware())
 	p.Use(middleware.NewResetMiddleware(5 * time.Second))

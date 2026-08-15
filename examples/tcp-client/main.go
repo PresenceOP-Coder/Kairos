@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 func main() {
@@ -18,6 +19,8 @@ func main() {
 	fmt.Println("Connected to Kairos!")
 	fmt.Println("Type messages (type 'exit' to quit):")
 
+	start := time.Now()
+
 	// Read responses from server
 	go func() {
 		reader := bufio.NewReader(conn)
@@ -27,6 +30,7 @@ func main() {
 				return
 			}
 			fmt.Printf("Received: %s", msg)
+			fmt.Printf("RTT: %v\n", time.Since(start))
 		}
 	}()
 
@@ -38,7 +42,7 @@ func main() {
 		if text == "exit" {
 			break
 		}
-
+		
 		_, err := fmt.Fprintln(conn, text)
 		if err != nil {
 			log.Println(err)

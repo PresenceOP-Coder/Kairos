@@ -9,13 +9,13 @@ import (
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
- 
+
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"status": "ok",
 	}); err != nil {
-    http.Error(w, err.Error(), http.StatusInternalServerError)
-    return
-}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 func (s *Server) connectionsHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -40,7 +40,6 @@ func (s *Server) connectionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (s *Server) statsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -48,4 +47,31 @@ func (s *Server) statsHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(s.metrics.Snapshot()); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (s *Server)latencyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusBadRequest)
+		return
+	}
+
+	var req LatencyRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "json error", http.StatusBadRequest)
+		return
+	}
+
+	s.config.SetLatency(
+		req.Enabled,
+		time.Duration(req.DelayMS)*time.Microsecond,
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(
+		map[string]string{
+			"status":"updated",
+		},
+	)
 }
