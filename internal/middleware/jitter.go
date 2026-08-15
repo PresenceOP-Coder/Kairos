@@ -4,51 +4,56 @@ import (
 	"math/rand"
 	"net"
 	"time"
+
+	"github.com/shreyasprajapti/kairos/internal/config"
 )
 
 type JitterMiddleware struct {
-	minDelay time.Duration
-	maxDelay time.Duration
-}
-type JitterConn struct {
-	net.Conn
-	minDelay time.Duration
-	maxDelay time.Duration
+	config *config.ChaosConfig
 }
 
-func NewJitterMiddleware(minDelay, maxDelay time.Duration) *JitterMiddleware {
-	return &JitterMiddleware{
-		minDelay: minDelay,
-		maxDelay: maxDelay,
-	}
+type JitterConn struct {
+	net.Conn
+	config *config.ChaosConfig
+}
+
+func NewJitterMiddleware(cfg *config.ChaosConfig) *JitterMiddleware {
+	return &JitterMiddleware{config: cfg}
 }
 
 func (m *JitterMiddleware) Wrap(conn net.Conn) net.Conn {
 	return &JitterConn{
-		Conn:     conn,
-		minDelay: m.minDelay,
-		maxDelay: m.maxDelay,
+		Conn:   conn,
+		config: m.config,
 	}
 }
 
 func (c *JitterConn) randomDelay() time.Duration {
-	if c.maxDelay <= c.minDelay {
-		return c.minDelay
+	enabled, min, max := c.config.GetJitter()
+	if !enabled {
+		return 0
 	}
 
-	diff := c.maxDelay - c.minDelay
+	if max <= min {
+		return min
+	}
 
-	return c.minDelay + time.Duration(rand.Int63n(int64(diff)))
-
+	diff := max - min
+	return min + time.Duration(rand.Int63n(int64(diff)))
 }
 
 func (c *JitterConn) Read(b []byte) (int, error) {
-	time.Sleep(c.randomDelay())
+	if d := c.randomDelay(); d > 0 {
+		time.Sleep(d)
+	}
 
 	return c.Conn.Read(b)
 }
+
 func (c *JitterConn) Write(b []byte) (int, error) {
-	time.Sleep(c.randomDelay())
+	if d := c.randomDelay(); d > 0 {
+		time.Sleep(d)
+	}
 
 	return c.Conn.Write(b)
 }
