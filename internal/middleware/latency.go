@@ -3,37 +3,47 @@ package middleware
 import (
 	"net"
 	"time"
+
+	"github.com/shreyasprajapti/kairos/internal/config"
 )
 
 type LatencyMiddleware struct {
-	delay time.Duration
+	config *config.ChaosConfig
 }
-type LatencyConn struct{
+type LatencyConn struct {
 	net.Conn
-	delay time.Duration
+	config *config.ChaosConfig
 }
-func NewLatencyMiddleware(delay time.Duration) *LatencyMiddleware {
+
+func NewLatencyMiddleware(cfg *config.ChaosConfig) *LatencyMiddleware {
 	return &LatencyMiddleware{
-		delay: delay,
+		config: cfg,
 	}
 }
 
-func (m *LatencyMiddleware) Wrap(conn net.Conn) net.Conn{
-	return &LatencyConn {
-		Conn: conn,
-		delay: m.delay,
+func (m *LatencyMiddleware) Wrap(conn net.Conn) net.Conn {
+	return &LatencyConn{
+		Conn:   conn,
+		config: m.config,
 	}
 }
 
+func (c *LatencyConn) Read(b []byte) (int, error) {
+	enabled, delay := c.config.GetLatency()
 
-func (c *LatencyConn) Read(b []byte) (int , error){
-	time.Sleep(c.delay)
+	if enabled {
+		time.Sleep(delay)
+	}
 
 	return c.Conn.Read(b)
 }
 
-func ( c* LatencyConn) Write(b []byte)(int , error){
-	time.Sleep(c.delay)
+func (c *LatencyConn) Write(b []byte) (int, error) {
+	enabled , delay := c.config.GetLatency()
+
+	if enabled {
+		time.Sleep(delay)
+	}
 
 	return c.Conn.Write(b)
 }

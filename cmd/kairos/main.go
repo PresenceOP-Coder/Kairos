@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
+	"github.com/shreyasprajapti/kairos/internal/config"
 	"github.com/shreyasprajapti/kairos/internal/middleware"
 	"github.com/shreyasprajapti/kairos/internal/proxy"
 )
@@ -26,10 +27,13 @@ func main() {
 		}
 	}()
 
+	cfg := config.NewChaosConfig()
+
+	
 	log.Printf("Starting Kairos...\n")
 	p.Use(middleware.NewLoggingMiddleware())
 	p.Use(middleware.NewResetMiddleware(5 * time.Second))
-	p.Use(middleware.NewLatencyMiddleware(500 * time.Millisecond))
+	p.Use(middleware.NewLatencyMiddleware(cfg))
 	p.Use(middleware.NewBandwidthMiddleware(100 * 1024))
 	p.Use(
 		middleware.NewPacketLossMiddleware(20),
