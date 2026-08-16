@@ -10,6 +10,7 @@ import (
 	"github.com/shreyasprajapti/kairos/internal/middleware"
 	"github.com/shreyasprajapti/kairos/internal/proxy"
 	"github.com/shreyasprajapti/kairos/internal/scenario"
+	"github.com/spf13/cobra"
 )
 
 func main() {
@@ -51,24 +52,57 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// rootCmd := &cobra.Command{
-	// 	Use:   "kairos",
-	// 	Short: "Kairos - An application-aware chaos engineering proxy",
-	// }
+	rootCmd := &cobra.Command{
+		Use:   "kairos",
+		Short: "Kairos - An application-aware chaos engineering proxy",
+	}
 
-	// runCmd := &cobra.Command{
-	// 	Use:   "run",
-	// 	Short: "Run the proxy or scenario",
-	// 	Run: func(cmd *cobra.Command, args []string) {
-	// 		fmt.Println("not implemented")
-	// 	},
-	// }
+	runCmd := &cobra.Command{
+		Use:   "run <scenario>",
+		Short: "Run Kairos with a scenario file",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 
-	// rootCmd.AddCommand(runCmd)
+			cfg := config.NewChaosConfig()
 
-	// if err := rootCmd.Execute(); err != nil {
-	// 	fmt.Fprintln(os.Stderr, err)
-	// 	os.Exit(1)
-	// }
+			eng := scenario.NewEngine(cfg)
+
+			s, err := scenario.Load(args[0])
+			if err != nil {
+				return err
+			}
+
+			eng.Apply(s)
+
+			p, err := proxy.NewProxy(":9000", "localhost:9001")
+			if err != nil {
+				return err
+			}
+
+			p.Use(middleware.NewLoggingMiddleware())
+			p.Use(middleware.NewLatencyMiddleware(cfg))
+			p.Use(middleware.NewJitterMiddleware(cfg))
+			p.Use(middleware.NewBandwidthMiddleware(cfg))
+			p.Use(middleware.NewResetMiddleware(cfg))
+
+			apiServer := api.NewServer(
+				p.Registry(),
+				p.Metrics(),
+				cfg,
+			)
+
+			go apiServer.Start(":8080")
+
+			log.Println("Starting Kairos...")
+
+			return p.Start()
+		},
+	}
+
+	rootCmd.AddCommand(runCmd)
+
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err)
+	}
 
 }
