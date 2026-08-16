@@ -11,8 +11,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Target listening on :9001")
-
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -20,20 +18,20 @@ func main() {
 		}
 
 		go func(c net.Conn) {
-		defer c.Close()
+			defer c.Close()
 
-		buf := make([]byte, 4096)
-		for {
-			n, err := c.Read(buf)
-			if n > 0 {
-				if _, werr := c.Write(buf[:n]); werr != nil {
+			buf := make([]byte, 4096)
+			for {
+				n, err := c.Read(buf)
+				if n > 0 {
+					if _, werr := c.Write(buf[:n]); werr != nil {
+						return
+					}
+				}
+				if err != nil {
 					return
 				}
 			}
-			if err != nil {
-				return
-			}
-		}
-	}(conn)
+		}(conn)
 	}
 }

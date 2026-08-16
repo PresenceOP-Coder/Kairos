@@ -1,0 +1,19 @@
+{
+  "latency": {
+    "enabled": true,
+    "delay_ms": 500
+  },
+  "jitter": {
+    "enabled": true,
+    "min_ms": 100,
+    "max_ms": 400
+  },
+  "bandwidth": {
+    "enabled": true,
+    "rate_kbps": 100
+  },
+  "reset": {
+    "enabled": false,
+    "after_seconds": 10
+  }
+}

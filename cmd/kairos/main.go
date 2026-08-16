@@ -2,12 +2,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
 	"github.com/shreyasprajapti/kairos/internal/config"
 	"github.com/shreyasprajapti/kairos/internal/middleware"
 	"github.com/shreyasprajapti/kairos/internal/proxy"
+	"github.com/shreyasprajapti/kairos/internal/scenario"
 )
 
 func main() {
@@ -23,7 +25,15 @@ func main() {
 		p.Metrics(),
 		cfg,
 	)
-	
+
+	engine := scenario.NewEngine(cfg)
+
+	s, _ := scenario.Load("scenarios/mobile-3g.json")
+	engine.Apply(s)
+
+	enabled, delay := cfg.GetLatency()
+	fmt.Println(enabled, delay)
+
 	go func() {
 		if err := apiServer.Start(":8080"); err != nil {
 			log.Fatal(err)
