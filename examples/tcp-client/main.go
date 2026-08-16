@@ -19,9 +19,9 @@ func main() {
 	fmt.Println("Connected to Kairos!")
 	fmt.Println("Type messages (type 'exit' to quit):")
 
-	start := time.Now()
+	sentTimes := make(chan time.Time, 100)
 
-	// Read responses from server
+	// Read responses
 	go func() {
 		reader := bufio.NewReader(conn)
 		for {
@@ -29,8 +29,11 @@ func main() {
 			if err != nil {
 				return
 			}
+
+			sent := <-sentTimes
+
 			fmt.Printf("Received: %s", msg)
-			fmt.Printf("RTT: %v\n", time.Since(start))
+			fmt.Printf("RTT: %v\n", time.Since(sent))
 		}
 	}()
 
@@ -42,7 +45,9 @@ func main() {
 		if text == "exit" {
 			break
 		}
-		
+
+		sentTimes <- time.Now()
+
 		_, err := fmt.Fprintln(conn, text)
 		if err != nil {
 			log.Println(err)
