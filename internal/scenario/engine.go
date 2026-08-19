@@ -36,3 +36,7 @@ func (e *Engine) Apply(s *Scenario) {
 		time.Duration(s.Reset.AfterSeconds)*time.Second,
 	)
 }
+
+func parseAfter(after string) (time.Duration, error) {
+	return time.ParseDuration(after)
+}
