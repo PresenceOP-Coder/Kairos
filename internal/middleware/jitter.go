@@ -51,9 +51,5 @@ func (c *JitterConn) Read(b []byte) (int, error) {
 }
 
 func (c *JitterConn) Write(b []byte) (int, error) {
-	if d := c.randomDelay(); d > 0 {
-		time.Sleep(d)
-	}
-
 	return c.Conn.Write(b)
 }

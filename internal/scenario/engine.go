@@ -1,6 +1,7 @@
 package scenario
 
 import (
+	"log"
 	"time"
 
 	"github.com/shreyasprajapti/kairos/internal/config"
@@ -62,6 +63,7 @@ func (e *Engine) ApplyStep(step Step) {
 			step.Latency.Enabled,
 			time.Duration(step.Latency.DelayMS)*time.Millisecond,
 		)
+		log.Printf("[Scheduler] Applied Latency: enabled=%v, delay=%dms", step.Latency.Enabled, step.Latency.DelayMS)
 	}
 
 	if step.Jitter != nil {
@@ -70,6 +72,7 @@ func (e *Engine) ApplyStep(step Step) {
 			time.Duration(step.Jitter.MinMS)*time.Millisecond,
 			time.Duration(step.Jitter.MaxMS)*time.Millisecond,
 		)
+		log.Printf("[Scheduler] Applied Jitter: enabled=%v, min=%dms, max=%dms", step.Jitter.Enabled, step.Jitter.MinMS, step.Jitter.MaxMS)
 	}
 
 	if step.Bandwidth != nil {
@@ -77,6 +80,7 @@ func (e *Engine) ApplyStep(step Step) {
 			step.Bandwidth.Enabled,
 			int64(step.Bandwidth.RateKBPS),
 		)
+		log.Printf("[Scheduler] Applied Bandwidth: enabled=%v, rate=%dkbps", step.Bandwidth.Enabled, step.Bandwidth.RateKBPS)
 	}
 
 	if step.Reset != nil {
@@ -84,6 +88,7 @@ func (e *Engine) ApplyStep(step Step) {
 			step.Reset.Enabled,
 			time.Duration(step.Reset.AfterSeconds)*time.Second,
 		)
+		log.Printf("[Scheduler] Applied Reset: enabled=%v, after=%ds", step.Reset.Enabled, step.Reset.AfterSeconds)
 	}
 
 	if step.PacketLoss != nil {
@@ -91,6 +96,7 @@ func (e *Engine) ApplyStep(step Step) {
 			step.PacketLoss.Enabled,
 			step.PacketLoss.Percent,
 		)
+		log.Printf("[Scheduler] Applied PacketLoss: enabled=%v, percent=%d%%", step.PacketLoss.Enabled, step.PacketLoss.Percent)
 	}
 }
 
@@ -98,15 +104,18 @@ func (s *Scheduler) Run(sc *Scenario) error {
 
 	go func() {
 
-		for _, step := range sc.Steps {
+		for i, step := range sc.Steps {
 
 			d, err := parseAfter(step.After)
 			if err != nil {
+				log.Printf("[Scheduler] Failed to parse duration %q: %v", step.After, err)
 				return
 			}
 
+			log.Printf("[Scheduler] Step %d will execute after %v...", i+1, d)
 			time.Sleep(d)
 
+			log.Printf("[Scheduler] Triggering Step %d (offset %v)", i+1, d)
 			s.engine.ApplyStep(step)
 		}
 

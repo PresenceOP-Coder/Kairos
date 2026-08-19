@@ -10,6 +10,7 @@ import (
 type LatencyMiddleware struct {
 	config *config.ChaosConfig
 }
+
 type LatencyConn struct {
 	net.Conn
 	config *config.ChaosConfig
@@ -31,7 +32,7 @@ func (m *LatencyMiddleware) Wrap(conn net.Conn) net.Conn {
 func (c *LatencyConn) Read(b []byte) (int, error) {
 	enabled, delay := c.config.GetLatency()
 
-	if enabled {
+	if enabled && delay > 0 {
 		time.Sleep(delay)
 	}
 
@@ -39,11 +40,5 @@ func (c *LatencyConn) Read(b []byte) (int, error) {
 }
 
 func (c *LatencyConn) Write(b []byte) (int, error) {
-	enabled , delay := c.config.GetLatency()
-
-	if enabled {
-		time.Sleep(delay)
-	}
-
 	return c.Conn.Write(b)
 }
