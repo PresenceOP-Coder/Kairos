@@ -1,10 +1,19 @@
 package scenario
 
+type Step struct {
+    After string `json:"after"`
+
+    Latency   *LatencyScenario   `json:"latency,omitempty"`
+    Jitter    *JitterScenario    `json:"jitter,omitempty"`
+    Bandwidth *BandwidthScenario `json:"bandwidth,omitempty"`
+    Reset     *ResetScenario     `json:"reset,omitempty"`
+}
 type Scenario struct {
 	Latency  LatencyScenario  `json:"latency"`
 	Jitter   JitterScenario   `json:"jitter"`
 	Bandwidth BandwidthScenario `json:"bandwidth"`
 	Reset    ResetScenario    `json:"reset"`
+	Step []Step `json:"step"`
 }
 
 type LatencyScenario struct {
