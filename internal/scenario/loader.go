@@ -5,8 +5,7 @@ import (
 	"os"
 )
 
-type Scenerio struct {
-}
+
 
 func Load(path string) (*Scenario, error) {
 	data, err := os.ReadFile(path)

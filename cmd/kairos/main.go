@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
@@ -14,49 +13,12 @@ import (
 )
 
 func main() {
-	p, err := proxy.NewProxy(":9000", "localhost:9001")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cfg := config.NewChaosConfig()
-
-	apiServer := api.NewServer(
-		p.Registry(),
-		p.Metrics(),
-		cfg,
-	)
-
-	engine := scenario.NewEngine(cfg)
-
-	s, _ := scenario.Load("scenarios/mobile-3g.json")
-	engine.Apply(s)
-
-	enabled, delay := cfg.GetLatency()
-	fmt.Println(enabled, delay)
-
-	go func() {
-		if err := apiServer.Start(":8080"); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	log.Printf("Starting Kairos...\n")
-	p.Use(middleware.NewLoggingMiddleware())
-	p.Use(middleware.NewResetMiddleware(cfg))
-	p.Use(middleware.NewLatencyMiddleware(cfg))
-	p.Use(middleware.NewBandwidthMiddleware(cfg))
-	p.Use(middleware.NewPacketLossMiddleware(20))
-	p.Use(middleware.NewJitterMiddleware(cfg))
-	if err := p.Start(); err != nil {
-		log.Fatal(err)
-	}
-
 	rootCmd := &cobra.Command{
 		Use:   "kairos",
-		Short: "Kairos - An application-aware chaos engineering proxy",
+		Short: "Kairos — an application-aware chaos engineering proxy",
 	}
 
+	// kairos run <scenario-file>
 	runCmd := &cobra.Command{
 		Use:   "run <scenario>",
 		Short: "Run Kairos with a scenario file",
@@ -64,16 +26,22 @@ func main() {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cfg := config.NewChaosConfig()
-
 			eng := scenario.NewEngine(cfg)
 
+			// Load the scenario file.
 			s, err := scenario.Load(args[0])
 			if err != nil {
 				return err
 			}
 
+			// Apply the top-level (immediate) chaos settings.
 			eng.Apply(s)
 
+			// Schedule any timed steps.
+			scheduler := scenario.NewScheduler(eng)
+			scheduler.Run(s)
+
+			// Wire up the proxy.
 			p, err := proxy.NewProxy(":9000", "localhost:9001")
 			if err != nil {
 				return err
@@ -84,17 +52,18 @@ func main() {
 			p.Use(middleware.NewJitterMiddleware(cfg))
 			p.Use(middleware.NewBandwidthMiddleware(cfg))
 			p.Use(middleware.NewResetMiddleware(cfg))
+			p.Use(middleware.NewPacketLossMiddleware(20))
 
-			apiServer := api.NewServer(
-				p.Registry(),
-				p.Metrics(),
-				cfg,
-			)
-
-			go apiServer.Start(":8080")
+			// Start the control-plane API in the background.
+			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
+			go func() {
+				if err := apiServer.Start(":8080"); err != nil {
+					log.Printf("API server error: %v", err)
+				}
+			}()
 
 			log.Println("Starting Kairos...")
-
+			// p.Start() blocks until the listener is closed.
 			return p.Start()
 		},
 	}
@@ -104,5 +73,4 @@ func main() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
-
 }

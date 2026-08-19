@@ -64,7 +64,7 @@ func (s *Server)latencyHandler(w http.ResponseWriter, r *http.Request) {
 
 	s.config.SetLatency(
 		req.Enabled,
-		time.Duration(req.DelayMS)*time.Microsecond,
+		time.Duration(req.DelayMS)*time.Millisecond,
 	)
 
 	w.Header().Set("Content-Type", "application/json")
