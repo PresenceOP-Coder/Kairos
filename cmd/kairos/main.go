@@ -52,7 +52,7 @@ func main() {
 			p.Use(middleware.NewJitterMiddleware(cfg))
 			p.Use(middleware.NewBandwidthMiddleware(cfg))
 			p.Use(middleware.NewResetMiddleware(cfg))
-			p.Use(middleware.NewPacketLossMiddleware(20))
+			p.Use(middleware.NewPacketLossMiddleware(cfg))
 
 			// Start the control-plane API in the background.
 			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)

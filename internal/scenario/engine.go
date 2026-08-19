@@ -39,6 +39,11 @@ func (e *Engine) Apply(s *Scenario) {
 		s.Reset.Enabled,
 		time.Duration(s.Reset.AfterSeconds)*time.Second,
 	)
+
+	e.config.SetPacketLoss(
+		s.PacketLoss.Enabled,
+		s.PacketLoss.Percent,
+	)
 }
 
 func parseAfter(after string) (time.Duration, error) {
@@ -78,6 +83,13 @@ func (e *Engine) ApplyStep(step Step) {
 		e.config.SetReset(
 			step.Reset.Enabled,
 			time.Duration(step.Reset.AfterSeconds)*time.Second,
+		)
+	}
+
+	if step.PacketLoss != nil {
+		e.config.SetPacketLoss(
+			step.PacketLoss.Enabled,
+			step.PacketLoss.Percent,
 		)
 	}
 }
