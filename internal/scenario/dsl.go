@@ -13,7 +13,7 @@ type Scenario struct {
 	Jitter   JitterScenario   `json:"jitter"`
 	Bandwidth BandwidthScenario `json:"bandwidth"`
 	Reset    ResetScenario    `json:"reset"`
-	Step []Step `json:"step"`
+	Steps []Step `json:"step"`
 }
 
 type LatencyScenario struct {

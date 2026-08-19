@@ -6,6 +6,10 @@ import (
 	"github.com/shreyasprajapti/kairos/internal/config"
 )
 
+type Scheduler struct {
+	engine *Engine
+}
+
 type Engine struct {
 	config *config.ChaosConfig
 }
@@ -39,4 +43,62 @@ func (e *Engine) Apply(s *Scenario) {
 
 func parseAfter(after string) (time.Duration, error) {
 	return time.ParseDuration(after)
+}
+
+func NewScheduler(engine *Engine) *Scheduler {
+	return &Scheduler{
+		engine: engine,
+	}
+}
+
+func (e *Engine) ApplyStep(step Step) {
+	if step.Latency != nil {
+		e.config.SetLatency(
+			step.Latency.Enabled,
+			time.Duration(step.Latency.DelayMS)*time.Millisecond,
+		)
+	}
+
+	if step.Jitter != nil {
+		e.config.SetJitter(
+			step.Jitter.Enabled,
+			time.Duration(step.Jitter.MinMS)*time.Millisecond,
+			time.Duration(step.Jitter.MaxMS)*time.Millisecond,
+		)
+	}
+
+	if step.Bandwidth != nil {
+		e.config.SetBandwidth(
+			step.Bandwidth.Enabled,
+			int64(step.Bandwidth.RateKBPS),
+		)
+	}
+
+	if step.Reset != nil {
+		e.config.SetReset(
+			step.Reset.Enabled,
+			time.Duration(step.Reset.AfterSeconds)*time.Second,
+		)
+	}
+}
+
+func (s *Scheduler) Run(sc *Scenario) error {
+
+	go func() {
+
+		for _, step := range sc.Steps {
+
+			d, err := parseAfter(step.After)
+			if err != nil {
+				return
+			}
+
+			time.Sleep(d)
+
+			s.engine.ApplyStep(step)
+		}
+
+	}()
+
+	return nil
 }
