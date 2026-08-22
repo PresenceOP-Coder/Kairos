@@ -59,17 +59,19 @@ func (p *Proxy) handleConn(client net.Conn) {
 	p.registry.Add(connection)
 	defer p.registry.Remove(connection.ID)
 
-
 	wrappedClient := client
 	wrappedTarget := target
 
-	p.mu.RLock()
-	for _, m := range p.middleware {
-		wrappedClient = m.Wrap(wrappedClient)
-		wrappedTarget = m.Wrap(wrappedTarget)
-	}
-	p.mu.RUnlock()
+	applyChaos := p.trigger == nil || p.trigger.ShouldApply()
 
+	if applyChaos {
+		p.mu.RLock()
+		for _, m := range p.middleware {
+			wrappedClient = m.Wrap(wrappedClient)
+			wrappedTarget = m.Wrap(wrappedTarget)
+		}
+		p.mu.RUnlock()
+	}
 
 	var wg sync.WaitGroup
 

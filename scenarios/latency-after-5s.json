@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "after": "10s",
+      "latency": {
+        "enabled": true,
+        "delay_ms": 5000
+      }
+    }
+  ]
+}

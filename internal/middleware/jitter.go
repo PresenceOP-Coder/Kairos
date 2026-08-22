@@ -42,18 +42,20 @@ func (c *JitterConn) randomDelay() time.Duration {
 	return min + time.Duration(rand.Int63n(int64(diff)))
 }
 
+// Read reads data first, then sleeps a random jitter delay.
+// Same post-read pattern as LatencyConn for consistent behaviour.
 func (c *JitterConn) Read(b []byte) (int, error) {
-	if d := c.randomDelay(); d > 0 {
-		time.Sleep(d)
+	n, err := c.Conn.Read(b)
+
+	if n > 0 {
+		if d := c.randomDelay(); d > 0 {
+			time.Sleep(d)
+		}
 	}
 
-	return c.Conn.Read(b)
+	return n, err
 }
 
 func (c *JitterConn) Write(b []byte) (int, error) {
-	if d := c.randomDelay(); d > 0 {
-		time.Sleep(d)
-	}
-
 	return c.Conn.Write(b)
 }

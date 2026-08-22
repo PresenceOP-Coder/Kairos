@@ -1,0 +1,9 @@
+{
+  "trigger": {
+    "every_nth_connection": 5
+  },
+  "latency": {
+    "enabled": true,
+    "delay_ms": 500
+  }
+}
