@@ -11,14 +11,15 @@ type Step struct {
 }
 
 type Scenario struct {
-	Latency    LatencyScenario    `json:"latency"`
-	Jitter     JitterScenario     `json:"jitter"`
-	Bandwidth  BandwidthScenario  `json:"bandwidth"`
-	Reset      ResetScenario      `json:"reset"`
-	PacketLoss PacketLossScenario `json:"packet_loss"`
-	Steps      []Step             `json:"steps"`
-}
+    Trigger Trigger `json:"trigger"`
 
+    Latency   LatencyScenario
+    Jitter    JitterScenario
+    Bandwidth BandwidthScenario
+    Reset     ResetScenario
+
+    Steps []Step
+}
 type LatencyScenario struct {
 	Enabled bool `json:"enabled"`
 	DelayMS int  `json:"delay_ms"`
@@ -44,3 +45,9 @@ type PacketLossScenario struct {
 	Enabled bool `json:"enabled"`
 	Percent int  `json:"percent"`
 }
+
+type Trigger struct {
+    EveryNthConnection int `json:"every_nth_connection,omitempty"`
+    AfterRequests      int `json:"after_requests,omitempty"`
+}
+
