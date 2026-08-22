@@ -9,6 +9,7 @@ import (
 	"github.com/shreyasprajapti/kairos/internal/middleware"
 	"github.com/shreyasprajapti/kairos/internal/proxy"
 	"github.com/shreyasprajapti/kairos/internal/scenario"
+	"github.com/shreyasprajapti/kairos/internal/trigger"
 	"github.com/spf13/cobra"
 )
 
@@ -53,7 +54,7 @@ func main() {
 			p.Use(middleware.NewBandwidthMiddleware(cfg))
 			p.Use(middleware.NewResetMiddleware(cfg))
 			p.Use(middleware.NewPacketLossMiddleware(cfg))
-
+			p.SetTrigger(trigger.NewEveryNthConnection(5))
 			// Start the control-plane API in the background.
 			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
 			go func() {

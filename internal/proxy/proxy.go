@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/shreyasprajapti/kairos/internal/middleware"
+	"github.com/shreyasprajapti/kairos/internal/trigger"
 )
 
 type Proxy struct {
@@ -19,6 +20,8 @@ type Proxy struct {
 
 	mu         sync.RWMutex
 	middleware []middleware.Middleware
+
+	trigger trigger.Trigger
 }
 
 func NewProxy(listenAddr, targetAddr string) (*Proxy, error) {
@@ -62,4 +65,8 @@ func (p *Proxy) Use(m middleware.Middleware) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.middleware = append(p.middleware, m)
+}
+
+func (p *Proxy) SetTrigger(t trigger.Trigger) {
+	p.trigger = t
 }
