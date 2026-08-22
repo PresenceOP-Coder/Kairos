@@ -1,24 +1,24 @@
 package scenario
 
 type Step struct {
-	After string `json:"after"`
+    After string `json:"after"`
 
-	Latency    *LatencyScenario    `json:"latency,omitempty"`
-	Jitter     *JitterScenario     `json:"jitter,omitempty"`
-	Bandwidth  *BandwidthScenario  `json:"bandwidth,omitempty"`
-	Reset      *ResetScenario      `json:"reset,omitempty"`
-	PacketLoss *PacketLossScenario `json:"packet_loss,omitempty"`
+    Latency   *LatencyScenario   `json:"latency,omitempty"`
+    Jitter    *JitterScenario    `json:"jitter,omitempty"`
+    Bandwidth *BandwidthScenario `json:"bandwidth,omitempty"`
+    Reset     *ResetScenario     `json:"reset,omitempty"`
+    PacketLoss *PacketLossScenario `json:"packet_loss,omitempty"`
 }
-
 type Scenario struct {
     Trigger Trigger `json:"trigger"`
 
-    Latency   LatencyScenario
-    Jitter    JitterScenario
-    Bandwidth BandwidthScenario
-    Reset     ResetScenario
+    Latency   LatencyScenario   `json:"latency"`
+    Jitter    JitterScenario    `json:"jitter"`
+    Bandwidth BandwidthScenario `json:"bandwidth"`
+    Reset     ResetScenario     `json:"reset"`
+    PacketLoss PacketLossScenario `json:"packet_loss"`
 
-    Steps []Step
+    Steps []Step `json:"steps"`
 }
 type LatencyScenario struct {
 	Enabled bool `json:"enabled"`

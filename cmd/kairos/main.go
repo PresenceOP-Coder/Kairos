@@ -54,7 +54,9 @@ func main() {
 			p.Use(middleware.NewBandwidthMiddleware(cfg))
 			p.Use(middleware.NewResetMiddleware(cfg))
 			p.Use(middleware.NewPacketLossMiddleware(cfg))
-			p.SetTrigger(trigger.NewEveryNthConnection(5))
+			if t := trigger.FromScenario(s); t != nil {
+				p.SetTrigger(t)
+			}
 			// Start the control-plane API in the background.
 			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
 			go func() {
