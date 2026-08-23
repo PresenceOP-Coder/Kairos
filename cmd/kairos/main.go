@@ -57,6 +57,8 @@ func main() {
 			if t := trigger.FromScenario(s); t != nil {
 				p.SetTrigger(t)
 			}
+
+			p.Use(middleware.NewBlackholeMiddleware(cfg))
 			// Start the control-plane API in the background.
 			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
 			go func() {

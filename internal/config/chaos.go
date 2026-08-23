@@ -23,6 +23,8 @@ type ChaosConfig struct {
 
 	PacketLossEnabled bool
 	PacketLossPercent int
+
+	blackholeEnabled bool
 }
 
 func NewChaosConfig() *ChaosConfig {
@@ -115,4 +117,20 @@ func (c *ChaosConfig) SetPacketLoss(enabled bool, percent int) {
 
 	c.PacketLossEnabled = enabled
 	c.PacketLossPercent = percent
+}
+
+
+func (c *ChaosConfig) SetBlackhole(enabled bool){
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.blackholeEnabled = enabled
+}
+
+func (c * ChaosConfig) GetBlackhole() bool{
+	c.mu.Lock()
+
+	defer c.mu.Unlock()
+
+	return c.blackholeEnabled
 }

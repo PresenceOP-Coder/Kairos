@@ -46,6 +46,10 @@ func (e *Engine) Apply(s *Scenario) {
 		s.PacketLoss.Enabled,
 		s.PacketLoss.Percent,
 	)
+
+	e.config.SetBlackhole(
+		s.Blackhole.Enabled,
+	)
 }
 
 func parseAfter(after string) (time.Duration, error) {
@@ -98,6 +102,12 @@ func (e *Engine) ApplyStep(step Step) {
 			step.PacketLoss.Percent,
 		)
 		log.Printf("[Scheduler] Applied PacketLoss: enabled=%v, percent=%d%%", step.PacketLoss.Enabled, step.PacketLoss.Percent)
+	}
+
+	if step.Blackhole != nil{
+		e.config.SetBlackhole(
+			step.Blackhole.Enabled,
+		)
 	}
 }
 
