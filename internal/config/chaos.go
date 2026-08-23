@@ -128,9 +128,9 @@ func (c *ChaosConfig) SetBlackhole(enabled bool){
 }
 
 func (c * ChaosConfig) GetBlackhole() bool{
-	c.mu.Lock()
+	c.mu.RLock()
 
-	defer c.mu.Unlock()
+	defer c.mu.RUnlock()
 
 	return c.blackholeEnabled
 }

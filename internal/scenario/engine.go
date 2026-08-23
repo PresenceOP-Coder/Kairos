@@ -108,6 +108,7 @@ func (e *Engine) ApplyStep(step Step) {
 		e.config.SetBlackhole(
 			step.Blackhole.Enabled,
 		)
+		log.Printf("[Scheduler] Applied Blackhole: enabled=%v", step.Blackhole.Enabled)
 	}
 }
 

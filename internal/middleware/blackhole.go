@@ -30,7 +30,7 @@ func (m *BlackholeMiddleware) Wrap(conn net.Conn) net.Conn {
 
 func (c *BlackholeConn) Write(b []byte) (int, error) {
 
-	if enabled, _ := c.config.GetBandwidth(); enabled {
+	if enabled := c.config.GetBlackhole(); enabled {
 		select {}
 	}
 	return c.Conn.Write(b)

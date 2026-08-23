@@ -8,7 +8,7 @@ type Step struct {
     Bandwidth *BandwidthScenario `json:"bandwidth,omitempty"`
     Reset     *ResetScenario     `json:"reset,omitempty"`
     PacketLoss *PacketLossScenario `json:"packet_loss,omitempty"`
-    Blackhole *BlackholeScenerio `json:"blackhole,omitempty"`
+    Blackhole *BlackholeScenario `json:"blackhole,omitempty"`
 }
 type Scenario struct {
     Trigger Trigger `json:"trigger"`
@@ -18,7 +18,7 @@ type Scenario struct {
     Bandwidth BandwidthScenario `json:"bandwidth"`
     Reset     ResetScenario     `json:"reset"`
     PacketLoss PacketLossScenario `json:"packet_loss"`
-    Blackhole BlackholeScenerio `json:"blackhole"`
+    Blackhole BlackholeScenario `json:"blackhole"`
     Steps []Step `json:"steps"`
 }
 type LatencyScenario struct {
@@ -52,7 +52,7 @@ type Trigger struct {
     AfterRequests      int `json:"after_requests,omitempty"`
 }
 
-type BlackholeScenerio struct{
+type BlackholeScenario struct{
     Enabled bool `json:"enabled"`
 }
 
