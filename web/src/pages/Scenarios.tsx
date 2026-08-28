@@ -48,15 +48,15 @@ export function Scenarios() {
               onClick={() => setSelectedScenario(scenario)}
               className={`glass-panel p-5 cursor-pointer transition-all duration-200 ${
                 selectedScenario?.id === scenario.id 
-                  ? 'bg-foreground text-background shadow-[4px_4px_0px_0px_#111] translate-x-[-2px] translate-y-[-2px]' 
-                  : 'bg-card text-foreground hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[-1px] hover:translate-y-[-1px]'
+                  ? 'shadow-[4px_4px_0px_0px_#111] translate-x-[-2px] translate-y-[-2px]' 
+                  : 'hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[-1px] hover:translate-y-[-1px]'
               }`}
             >
               <div className="flex items-start justify-between mb-3">
                 <h3 className="font-bold text-lg">{scenario.name}</h3>
-                <Layers className={`w-5 h-5 stroke-[2.5] ${selectedScenario?.id === scenario.id ? 'text-background' : 'text-foreground'}`} />
+                <Layers className="w-5 h-5 stroke-[2.5] text-foreground" />
               </div>
-              <p className={`text-sm font-medium line-clamp-2 ${selectedScenario?.id === scenario.id ? 'text-background/80' : 'text-foreground/70'}`}>
+              <p className="text-sm font-medium line-clamp-2 text-foreground/70">
                 {scenario.description}
               </p>
             </div>
