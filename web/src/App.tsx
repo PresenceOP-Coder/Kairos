@@ -3,6 +3,7 @@ import { DashboardLayout } from './components/layout/DashboardLayout';
 import { Controls } from './pages/Controls';
 import { Metrics } from './pages/Metrics';
 import { Scenarios } from './pages/Scenarios';
+import { Timeline } from './pages/Timeline';
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
           <Route path="/controls" element={<Controls />} />
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/scenarios" element={<Scenarios />} />
-          <Route path="/timeline" element={<div>Scheduler / Timeline Placeholder</div>} />
+          <Route path="/timeline" element={<Timeline />} />
         </Route>
       </Routes>
     </Router>
