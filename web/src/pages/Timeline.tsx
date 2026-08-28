@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CalendarClock, CheckCircle2, PlayCircle, Clock } from 'lucide-react';
-import { Experiment } from '../types';
+import type { Experiment } from '../types';
 
 const mockExperiments: Experiment[] = [
   {
@@ -63,7 +63,7 @@ export function Timeline() {
         {filteredExperiments.length === 0 ? (
           <div className="pl-8 text-foreground/40 text-sm italic">No experiments found.</div>
         ) : (
-          filteredExperiments.map((exp, idx) => {
+          filteredExperiments.map((exp) => {
             const isRunning = exp.status === 'running';
             const isCompleted = exp.status === 'completed';
             const isScheduled = exp.status === 'scheduled';

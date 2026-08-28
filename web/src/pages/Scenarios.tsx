@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Layers, Plus, Play, MoreVertical, FileJson, Clock } from 'lucide-react';
-import { Scenario } from '../types';
+import type { Scenario } from '../types';
 
 const mockScenarios: Scenario[] = [
   {

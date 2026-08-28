@@ -1,4 +1,4 @@
-import { Proxy, Experiment, ProxyMetrics, Scenario, FaultConfig } from '../types';
+import type { Proxy, Experiment, ProxyMetrics, Scenario, FaultConfig } from '../types';
 
 const API_BASE = '/api/v1'; // Assuming Vite proxies this to the Go backend
 

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Play, Square, Activity, Zap, ShieldAlert, Wifi } from 'lucide-react';
-import { Proxy, FaultConfig } from '../types';
+import type { Proxy } from '../types';
 
 export function Controls() {
   const [proxies, setProxies] = useState<Proxy[]>([
