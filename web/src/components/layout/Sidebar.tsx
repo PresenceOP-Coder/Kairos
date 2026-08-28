@@ -10,19 +10,19 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-64 glass-panel border-r border-card-border hidden md:flex flex-col h-full sticky top-0">
-      <div className="p-6 flex items-center gap-3 border-b border-card-border/50">
-        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/50 text-primary font-bold text-xl shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+    <aside className="w-64 bg-background border-r-2 border-foreground hidden md:flex flex-col h-full sticky top-0">
+      <div className="p-6 flex items-center gap-3 border-b-2 border-foreground">
+        <div className="w-10 h-10 rounded-xl bg-card border-2 border-foreground flex items-center justify-center text-foreground font-bold text-xl">
           K
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Kairos</h1>
-          <p className="text-xs text-primary/80 font-medium">Chaos Proxy</p>
+          <p className="text-xs text-foreground/70 font-medium">Chaos Proxy</p>
         </div>
       </div>
       
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div className="text-xs font-semibold text-foreground/40 uppercase tracking-wider mb-3 px-3">
+        <div className="text-xs font-bold text-foreground/50 uppercase tracking-widest mb-4 px-3">
           Dashboard
         </div>
         {navItems.map((item) => (
@@ -30,22 +30,22 @@ export function Sidebar() {
             key={item.name}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 border-2 ${
                 isActive
-                  ? 'bg-primary/10 text-primary shadow-[inset_2px_0_0_0_#8b5cf6]'
-                  : 'text-foreground/70 hover:bg-card-border/50 hover:text-foreground'
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'text-foreground border-transparent hover:border-foreground/20 hover:bg-foreground/5'
               }`
             }
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className="w-5 h-5 stroke-[2.5]" />
             {item.name}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-card-border/50">
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground/70 hover:bg-card-border/50 hover:text-foreground transition-all duration-200 w-full">
-          <Settings className="w-5 h-5" />
+      <div className="p-4 border-t-2 border-foreground">
+        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground border-2 border-transparent hover:border-foreground/20 hover:bg-foreground/5 transition-all duration-200 w-full">
+          <Settings className="w-5 h-5 stroke-[2.5]" />
           Settings
         </button>
       </div>
