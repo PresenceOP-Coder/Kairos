@@ -1,10 +1,28 @@
-import type { Proxy, Experiment, Scenario, Fault } from '../types';
+import type { Connection } from '../types';
 
-const API_BASE = '/api/v1'; // Assuming Vite proxies this to the Go backend
+// The Go backend currently exposes routes at the root level:
+// GET /health
+// GET /connections
+// GET /stats
+// POST /chaos
+// POST /chaos/latency
+
+export interface SystemHealth {
+  status: string;
+  uptime?: string;
+  version?: string;
+}
+
+export interface SystemStats {
+  active_connections: number;
+  bytes_sent: number;
+  bytes_received: number;
+  active_proxies: number;
+}
 
 class KairosApiClient {
   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await fetch(endpoint, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -16,7 +34,6 @@ class KairosApiClient {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
 
-    // Handle 204 No Content
     if (response.status === 204) {
       return {} as T;
     }
@@ -24,54 +41,41 @@ class KairosApiClient {
     return response.json();
   }
 
-  // Proxies
-  async getProxies(): Promise<Proxy[]> {
-    return this.fetch<Proxy[]>('/proxies');
+  async getHealth(): Promise<SystemHealth> {
+    try {
+      return await this.fetch<SystemHealth>('/health');
+    } catch {
+      return { status: 'offline' };
+    }
   }
 
-  async startProxy(config: Proxy['config']): Promise<Proxy> {
-    return this.fetch<Proxy>('/proxies', {
+  async getConnections(): Promise<Connection[]> {
+    try {
+      return await this.fetch<Connection[]>('/connections');
+    } catch {
+      return [];
+    }
+  }
+
+  async getStats(): Promise<SystemStats> {
+    try {
+      return await this.fetch<SystemStats>('/stats');
+    } catch {
+      return {
+        active_connections: 0,
+        bytes_sent: 0,
+        bytes_received: 0,
+        active_proxies: 0
+      };
+    }
+  }
+
+  // TODO: Add strict typings for Chaos payloads once backend is finalized
+  async setChaos(config: any): Promise<void> {
+    return this.fetch<void>('/chaos', {
       method: 'POST',
-      body: JSON.stringify(config),
+      body: JSON.stringify(config)
     });
-  }
-
-  async stopProxy(id: string): Promise<void> {
-    return this.fetch<void>(`/proxies/${id}`, { method: 'DELETE' });
-  }
-
-  async updateProxyFaults(id: string, faults: Fault[]): Promise<Proxy> {
-    return this.fetch<Proxy>(`/proxies/${id}/faults`, {
-      method: 'PUT',
-      body: JSON.stringify({ faults }),
-    });
-  }
-
-  // Experiments
-  async getExperiments(): Promise<Experiment[]> {
-    return this.fetch<Experiment[]>('/experiments');
-  }
-
-  async createExperiment(exp: Partial<Experiment>): Promise<Experiment> {
-    return this.fetch<Experiment>('/experiments', {
-      method: 'POST',
-      body: JSON.stringify(exp),
-    });
-  }
-
-  async stopExperiment(id: string): Promise<void> {
-    return this.fetch<void>(`/experiments/${id}/stop`, { method: 'POST' });
-  }
-
-  // Metrics
-  async getMetrics(proxyId?: string): Promise<any[]> {
-    const url = proxyId ? `/metrics?proxyId=${proxyId}` : '/metrics';
-    return this.fetch<any[]>(url);
-  }
-
-  // Scenarios
-  async getScenarios(): Promise<Scenario[]> {
-    return this.fetch<Scenario[]>('/scenarios');
   }
 }
 

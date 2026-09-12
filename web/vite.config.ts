@@ -5,4 +5,29 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [tailwindcss(), react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/health': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/connections': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/stats': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/chaos': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      }
+    }
+  }
 })
