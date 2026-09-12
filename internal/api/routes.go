@@ -19,5 +19,6 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("/stats", s.statsHandler)
 	mux.HandleFunc("/chaos/latency", s.latencyHandler)
 	mux.HandleFunc("/chaos", s.chaosHandler)
+	mux.HandleFunc("/scenario", s.scenarioHandler)
 	return mux
 }

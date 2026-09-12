@@ -87,3 +87,17 @@ func (s *Server) chaosHandler(w http.ResponseWriter, r *http.Request) {
 		LatencyDelayMS: delay.Milliseconds(),
 	})
 }
+
+func (s *Server) scenarioHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if s.scenario == nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "No scenario currently loaded"})
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(s.scenario); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}

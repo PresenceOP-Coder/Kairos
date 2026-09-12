@@ -102,3 +102,29 @@ export function useChaosConfig(pollingInterval = 2000) {
 
   return { config, mutate };
 }
+
+export function useCurrentScenario(pollingInterval = 3000) {
+  const [scenario, setScenario] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchScenario = async () => {
+      const data = await apiClient.getScenario();
+      if (mounted) {
+        setScenario(data);
+        setLoading(false);
+      }
+    };
+
+    fetchScenario();
+    const interval = setInterval(fetchScenario, pollingInterval);
+    
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [pollingInterval]);
+
+  return { scenario, loading };
+}

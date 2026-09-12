@@ -1,161 +1,105 @@
-import { useState } from 'react';
-import { CalendarClock, CheckCircle2, PlayCircle, Clock, Zap } from 'lucide-react';
-import type { Experiment } from '../types';
-
-const mockExperiments: Experiment[] = [
-  {
-    id: 'exp-1',
-    name: 'DB Latency Spike (Peak Hours)',
-    status: 'scheduled',
-    targetProxyIds: ['proxy-db'],
-    faults: [{ type: 'latency', percentage: 100, delayMs: 200 }],
-    startTime: new Date(Date.now() + 1000 * 60 * 60).toISOString(), // in 1 hour
-    endTime: new Date(Date.now() + 1000 * 60 * 65).toISOString(),
-  },
-  {
-    id: 'exp-2',
-    name: 'Payment Gateway Aborts',
-    status: 'running',
-    targetProxyIds: ['proxy-payments'],
-    faults: [{ type: 'reset', percentage: 5 }],
-    startTime: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // started 10m ago
-    endTime: new Date(Date.now() + 1000 * 60 * 20).toISOString(),
-  },
-  {
-    id: 'exp-3',
-    name: 'Search Service Throttling',
-    status: 'completed',
-    targetProxyIds: ['proxy-search'],
-    faults: [{ type: 'bandwidth', percentage: 100, rateLimitBytesPerSec: 10240 }],
-    startTime: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    endTime: new Date(Date.now() - 1000 * 60 * 110).toISOString(),
-  }
-];
+import { CalendarClock, PlayCircle, Clock, CheckCircle2, CircleDashed, StopCircle } from 'lucide-react';
+import { useCurrentScenario } from '../hooks/useKairos';
 
 export function Experiments() {
-  const [filter, setFilter] = useState<'all' | 'running' | 'scheduled' | 'completed'>('all');
-
-  const filteredExperiments = filter === 'all' 
-    ? mockExperiments 
-    : mockExperiments.filter(e => e.status === filter);
+  const { scenario, loading } = useCurrentScenario();
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Experiment Timeline</h2>
-          <p className="text-foreground/60 text-sm mt-1">Track past, ongoing, and upcoming chaos experiments.</p>
+          <p className="text-foreground/60 text-sm mt-1">Live execution tracking for the currently loaded scenario.</p>
         </div>
-        <div className="bg-secondary border border-card-border p-1 rounded-lg flex items-center text-sm font-medium">
-          {['all', 'running', 'scheduled', 'completed'].map(f => (
-            <button 
-              key={f}
-              onClick={() => setFilter(f as any)}
-              className={`px-3 py-1 rounded-md transition-colors capitalize ${filter === f ? 'bg-primary/20 text-primary' : 'text-foreground/60 hover:text-foreground'}`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 text-sm font-medium px-3 py-1.5 bg-card border border-card-border rounded-lg">
+          <Clock className="w-4 h-4 text-primary" />
+          <span>T+00:00</span>
         </div>
       </div>
 
-      <div className="relative border-l border-card-border ml-4 md:ml-6 space-y-8 py-4">
-        {filteredExperiments.length === 0 ? (
-          <div className="pl-8 text-foreground/40 text-sm italic">No experiments found.</div>
-        ) : (
-          filteredExperiments.map((exp) => {
-            const isRunning = exp.status === 'running';
-            const isCompleted = exp.status === 'completed';
-            const isScheduled = exp.status === 'scheduled';
-            
-            return (
-              <div key={exp.id} className="relative pl-8 md:pl-10 group">
-                {/* Timeline Node */}
-                <div className={`absolute -left-[17px] top-1 w-8 h-8 rounded-full border-4 border-background flex items-center justify-center
-                  ${isRunning ? 'bg-blue-500 text-white animate-pulse shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 
-                    isCompleted ? 'bg-success text-white' : 'bg-card border-card-border text-foreground/40'}`}
-                >
-                  {isRunning && <PlayCircle className="w-4 h-4" />}
-                  {isCompleted && <CheckCircle2 className="w-4 h-4" />}
-                  {isScheduled && <Clock className="w-4 h-4" />}
+      <div className="glass-panel p-6 rounded-xl relative overflow-hidden">
+        {/* Decorative background grid */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMWgydjJIMUMxeiIgZmlsbD0icmdiYSgyNTUsIDI1NSLCAyNTUsIDAuMDUpIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4=')] opacity-50"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-8 pb-4 border-b border-card-border">
+            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
+              <CalendarClock className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Execution Timeline</h3>
+              <p className="text-sm text-foreground/50">Tracking scheduled steps mapped in the scenario YAML.</p>
+            </div>
+          </div>
+
+          {loading ? (
+             <div className="animate-pulse h-32 flex items-center justify-center text-foreground/50">
+               Loading timeline...
+             </div>
+          ) : !scenario || scenario.error || !scenario.steps || scenario.steps.length === 0 ? (
+             <div className="flex flex-col items-center justify-center h-48 text-foreground/50 italic border border-dashed border-card-border rounded-lg bg-card/20">
+               <StopCircle className="w-8 h-8 mb-3 opacity-50" />
+               No scheduled steps in the active scenario.
+             </div>
+          ) : (
+            <div className="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-card-border">
+              {/* Start Node */}
+              <div className="relative">
+                <div className="absolute -left-[37px] top-1 bg-background rounded-full p-1">
+                  <PlayCircle className="w-4 h-4 text-success" />
                 </div>
-
-                {/* Content Card */}
-                <div className={`glass-panel p-5 transition-all duration-300 border ${
-                  isRunning ? 'border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.1)]' : 'hover:border-primary/30'
-                }`}>
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
-                          ${isRunning ? 'bg-blue-500/10 text-blue-400' : 
-                            isCompleted ? 'bg-success/10 text-success' : 'bg-foreground/10 text-foreground/60'}`}
-                        >
-                          {exp.status}
-                        </span>
-                        <h3 className="font-semibold text-lg">{exp.name}</h3>
-                      </div>
-                      <div className="text-sm text-foreground/60 flex items-center gap-2 mt-2">
-                        <CalendarClock className="w-4 h-4" />
-                        {new Date(exp.startTime).toLocaleString()} 
-                        {exp.endTime && ` — ${new Date(exp.endTime).toLocaleTimeString()}`}
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col items-start md:items-end gap-2">
-                      <div className="text-xs font-medium text-foreground/50">Target Proxies</div>
-                      <div className="flex flex-wrap gap-1">
-                        {exp.targetProxyIds.map(id => (
-                          <span key={id} className="bg-background border border-card-border px-2 py-1 rounded text-xs font-mono text-primary/80">
-                            {id}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium text-foreground">Scenario Started</h4>
+                    <div className="text-sm text-foreground/50 mt-1">Global state initialized</div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t border-card-border">
-                    <div className="text-xs font-medium text-foreground/50 mb-2">Injected Faults</div>
-                    <div className="flex flex-wrap gap-2">
-                      {exp.faults.map((fault, i) => (
-                        <div key={i} className="bg-background rounded-lg p-2 px-3 border border-card-border text-xs flex items-center gap-2">
-                          <span className="font-semibold capitalize text-foreground/80">{fault.type}</span>
-                          <span className="text-foreground/40">|</span>
-                          <span className="font-mono text-primary/70">{fault.percentage}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {isRunning && (
-                    <div className="mt-4 pt-4 border-t border-card-border flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="text-xs font-medium text-foreground/50">Current Step:</div>
-                         <div className="text-sm font-semibold text-blue-400">Step 2: Database Latency</div>
-                      </div>
-                      <div className="text-xs font-mono text-foreground/60">
-                        Remaining: 1m 45s
-                      </div>
-                    </div>
-                  )}
-                  
-                  {isScheduled && (
-                    <div className="mt-4 pt-4 border-t border-card-border flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="text-xs font-medium text-warning flex items-center gap-1">
-                           <Zap className="w-3 h-3" /> Waiting for Trigger
-                         </div>
-                      </div>
-                      <div className="text-xs text-foreground/60">
-                        Condition: HTTP 500 &gt; 5%
-                      </div>
-                    </div>
-                  )}
+                  <span className="text-xs font-mono text-foreground/40 bg-card px-2 py-1 rounded">T+0s</span>
                 </div>
               </div>
-            );
-          })
-        )}
+
+              {/* Dynamic Steps */}
+              {scenario.steps.map((step: any, idx: number) => (
+                <div key={idx} className="relative">
+                  <div className="absolute -left-[37px] top-1 bg-background rounded-full p-1">
+                    <CircleDashed className="w-4 h-4 text-foreground/30 animate-[spin_4s_linear_infinite]" />
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-foreground">Execute Step {idx + 1}</h4>
+                      <div className="text-sm text-foreground/60 mt-1 flex flex-wrap gap-2">
+                        {step.latency?.enabled && (
+                          <span className="bg-blue-400/10 text-blue-400 px-2 py-0.5 rounded text-xs border border-blue-400/20">Latency: {step.latency.delay_ms}ms</span>
+                        )}
+                        {step.reset?.enabled && (
+                          <span className="bg-destructive/10 text-destructive px-2 py-0.5 rounded text-xs border border-destructive/20">Reset Conn</span>
+                        )}
+                        {step.packet_loss?.enabled && (
+                          <span className="bg-orange-400/10 text-orange-400 px-2 py-0.5 rounded text-xs border border-orange-400/20">Drop: {step.packet_loss.percent}%</span>
+                        )}
+                        {step.blackhole?.enabled && (
+                          <span className="bg-gray-400/10 text-gray-400 px-2 py-0.5 rounded text-xs border border-gray-400/20">Blackhole</span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">+{step.after}</span>
+                  </div>
+                </div>
+              ))}
+
+              {/* End Node */}
+              <div className="relative opacity-50">
+                <div className="absolute -left-[37px] top-1 bg-background rounded-full p-1">
+                  <CheckCircle2 className="w-4 h-4 text-foreground/40" />
+                </div>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-medium text-foreground">Scenario Complete</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -94,6 +94,14 @@ class KairosApiClient {
       body: JSON.stringify(req)
     });
   }
+
+  async getScenario(): Promise<any> {
+    try {
+      return await this.fetch<any>('/scenario');
+    } catch {
+      return null;
+    }
+  }
 }
 
 export const apiClient = new KairosApiClient();
