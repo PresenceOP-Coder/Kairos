@@ -2,29 +2,31 @@ import { Bell, Search, Menu } from 'lucide-react';
 
 export function Topbar() {
   return (
-    <header className="bg-background h-16 sticky top-0 z-40 border-b-2 border-foreground flex items-center justify-between px-4 lg:px-8">
+    <header className="bg-background/80 backdrop-blur-md h-14 sticky top-0 z-40 border-b border-card-border flex items-center justify-between px-4 lg:px-8">
       <div className="flex items-center gap-4">
-        <button className="md:hidden p-2 rounded-lg text-foreground border-2 border-transparent hover:border-foreground/20 hover:bg-foreground/5 transition-colors">
-          <Menu className="w-5 h-5 stroke-[2.5]" />
+        <button className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-secondary transition-colors">
+          <Menu className="w-5 h-5" />
         </button>
-        <div className="hidden md:flex items-center gap-2 text-sm text-foreground/70 font-medium">
-          <kbd className="px-2 py-1 bg-card border-2 border-foreground rounded-md text-xs font-mono font-bold text-foreground">⌘</kbd>
-          <kbd className="px-2 py-1 bg-card border-2 border-foreground rounded-md text-xs font-mono font-bold text-foreground">K</kbd>
+        <div className="hidden md:flex items-center gap-2 text-sm text-foreground/50">
+          <kbd className="px-2 py-0.5 bg-secondary border border-card-border rounded text-xs font-mono">⌘</kbd>
+          <kbd className="px-2 py-0.5 bg-secondary border border-card-border rounded text-xs font-mono">K</kbd>
           <span>to search</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button className="p-2.5 rounded-full text-foreground border-2 border-transparent hover:border-foreground/20 hover:bg-foreground/5 transition-all duration-200 relative group">
-          <Search className="w-5 h-5 stroke-[2.5]" />
+      <div className="flex items-center gap-2">
+        <button className="p-2 rounded-md text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors">
+          <Search className="w-4 h-4" />
         </button>
-        <button className="p-2.5 rounded-full text-foreground border-2 border-transparent hover:border-foreground/20 hover:bg-foreground/5 transition-all duration-200 relative group">
-          <Bell className="w-5 h-5 stroke-[2.5]" />
-          <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-foreground rounded-full border-2 border-background"></span>
+        <button className="p-2 rounded-md text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors relative">
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border border-background"></span>
         </button>
-        <div className="h-8 w-[2px] bg-foreground mx-2"></div>
-        <div className="w-9 h-9 rounded-full bg-card border-2 border-foreground cursor-pointer hover:bg-foreground hover:text-background transition-colors duration-200 flex items-center justify-center">
-          <span className="text-xs font-bold">OP</span>
+        <div className="h-6 w-px bg-card-border mx-2"></div>
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-blue-500 p-[1px] cursor-pointer">
+          <div className="w-full h-full bg-background rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-foreground">OP</span>
+          </div>
         </div>
       </div>
     </header>

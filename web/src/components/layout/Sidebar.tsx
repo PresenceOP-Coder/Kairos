@@ -10,19 +10,19 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-64 bg-background border-r-2 border-foreground hidden md:flex flex-col h-full sticky top-0">
-      <div className="p-6 flex items-center gap-3 border-b-2 border-foreground">
-        <div className="w-10 h-10 rounded-xl bg-card border-2 border-foreground flex items-center justify-center text-foreground font-bold text-xl">
+    <aside className="w-64 bg-background border-r border-card-border hidden md:flex flex-col h-full sticky top-0">
+      <div className="p-5 flex items-center gap-3 border-b border-card-border">
+        <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 text-primary font-bold">
           K
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Kairos</h1>
-          <p className="text-xs text-foreground/70 font-medium">Chaos Proxy</p>
+          <h1 className="font-bold tracking-tight text-foreground">Kairos</h1>
+          <p className="text-xs text-foreground/60 font-medium">Chaos Proxy</p>
         </div>
       </div>
       
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div className="text-xs font-bold text-foreground/50 uppercase tracking-widest mb-4 px-3">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <div className="text-xs font-semibold text-foreground/40 uppercase tracking-wider mb-2 px-3 pt-2">
           Dashboard
         </div>
         {navItems.map((item) => (
@@ -30,22 +30,22 @@ export function Sidebar() {
             key={item.name}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 border-2 ${
+              `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'text-foreground border-transparent hover:border-foreground/20 hover:bg-foreground/5'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-foreground/70 hover:bg-secondary hover:text-foreground'
               }`
             }
           >
-            <item.icon className="w-5 h-5 stroke-[2.5]" />
+            <item.icon className="w-4 h-4" />
             {item.name}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 border-t-2 border-foreground">
-        <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-foreground border-2 border-transparent hover:border-foreground/20 hover:bg-foreground/5 transition-all duration-200 w-full">
-          <Settings className="w-5 h-5 stroke-[2.5]" />
+      <div className="p-3 border-t border-card-border">
+        <button className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors w-full">
+          <Settings className="w-4 h-4" />
           Settings
         </button>
       </div>

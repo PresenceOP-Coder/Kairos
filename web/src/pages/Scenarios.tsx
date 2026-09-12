@@ -31,32 +31,32 @@ export function Scenarios() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(mockScenarios[0]);
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-8">
+    <div className="flex h-[calc(100vh-8rem)] gap-6">
       {/* Scenario List */}
-      <div className="w-1/3 flex flex-col gap-6">
-        <div className="flex items-center justify-between border-b-2 border-foreground pb-4">
-          <h2 className="text-3xl font-black tracking-tighter uppercase">Scenarios</h2>
-          <button className="paper-btn w-10 h-10 bg-foreground text-background rounded-xl flex items-center justify-center">
-            <Plus className="w-5 h-5 stroke-[3]" />
+      <div className="w-1/3 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold tracking-tight">Scenarios</h2>
+          <button className="p-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors shadow-lg shadow-primary/20">
+            <Plus className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
           {mockScenarios.map(scenario => (
             <div 
               key={scenario.id} 
               onClick={() => setSelectedScenario(scenario)}
-              className={`glass-panel p-5 cursor-pointer transition-all duration-200 ${
+              className={`glass-panel p-4 cursor-pointer transition-all duration-200 border ${
                 selectedScenario?.id === scenario.id 
-                  ? 'shadow-[4px_4px_0px_0px_#111] translate-x-[-2px] translate-y-[-2px]' 
-                  : 'hover:shadow-[2px_2px_0px_0px_#111] hover:translate-x-[-1px] hover:translate-y-[-1px]'
+                  ? 'border-primary bg-primary/5 shadow-lg shadow-primary/5' 
+                  : 'border-transparent hover:border-primary/30 hover:bg-card-border/30'
               }`}
             >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-bold text-lg">{scenario.name}</h3>
-                <Layers className="w-5 h-5 stroke-[2.5] text-foreground" />
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="font-semibold">{scenario.name}</h3>
+                <Layers className={`w-4 h-4 ${selectedScenario?.id === scenario.id ? 'text-primary' : 'text-foreground/40'}`} />
               </div>
-              <p className="text-sm font-medium line-clamp-2 text-foreground/70">
+              <p className="text-sm text-foreground/60 line-clamp-2">
                 {scenario.description}
               </p>
             </div>
@@ -65,32 +65,32 @@ export function Scenarios() {
       </div>
 
       {/* Scenario Details */}
-      <div className="flex-1 glass-panel flex flex-col overflow-hidden bg-card">
+      <div className="flex-1 glass-panel flex flex-col overflow-hidden">
         {selectedScenario ? (
           <>
-            <div className="p-8 border-b-2 border-card-border bg-background flex items-start justify-between">
+            <div className="p-6 border-b border-card-border bg-card/50 flex items-start justify-between">
               <div>
-                <h2 className="text-3xl font-black tracking-tighter uppercase mb-3">{selectedScenario.name}</h2>
-                <p className="text-foreground/80 font-medium max-w-2xl">{selectedScenario.description}</p>
+                <h2 className="text-2xl font-bold tracking-tight mb-2">{selectedScenario.name}</h2>
+                <p className="text-foreground/70 text-sm max-w-2xl">{selectedScenario.description}</p>
               </div>
-              <div className="flex items-center gap-4">
-                <button className="paper-btn flex items-center gap-2 px-5 py-3 bg-[#c6dfcd] text-[#378051] rounded-xl font-bold uppercase tracking-wider text-sm shadow-[2px_2px_0px_0px_#111]">
-                  <Play className="w-5 h-5 fill-current stroke-current" /> RUN NOW
+              <div className="flex items-center gap-3">
+                <button className="flex items-center gap-2 px-4 py-2 bg-success/10 text-success hover:bg-success/20 rounded-lg text-sm font-medium transition-colors">
+                  <Play className="w-4 h-4 fill-current" /> Run Now
                 </button>
-                <button className="paper-btn w-12 h-12 flex items-center justify-center rounded-xl bg-card border-2 border-foreground shadow-[2px_2px_0px_0px_#111]">
-                  <MoreVertical className="w-5 h-5 stroke-[3]" />
+                <button className="p-2 rounded-lg border border-card-border hover:bg-secondary transition-colors">
+                  <MoreVertical className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 p-8 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-8 mb-8">
-                <div className="bg-background rounded-xl p-6 border-2 border-card-border">
-                  <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest mb-2">
-                    <FileJson className="w-5 h-5 stroke-[2.5]" /> CONFIGURATION
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="bg-background/50 rounded-xl p-5 border border-card-border">
+                  <div className="flex items-center gap-2 text-sm font-medium mb-1 text-primary">
+                    <FileJson className="w-4 h-4" /> Configuration
                   </div>
-                  <div className="text-sm text-foreground/60 font-medium mb-6">YAML/JSON definition of faults</div>
-                  <pre className="p-5 bg-card rounded-xl text-sm font-mono font-medium text-foreground overflow-x-auto border-2 border-card-border">
+                  <div className="text-xs text-foreground/50 mb-4">YAML/JSON definition of faults</div>
+                  <pre className="p-4 bg-card rounded-lg text-sm font-mono text-foreground/80 overflow-x-auto border border-card-border/50">
 {`name: ${selectedScenario.name}
 version: v1alpha1
 kind: ChaosScenario
@@ -103,25 +103,25 @@ spec:
                   </pre>
                 </div>
                 
-                <div className="bg-background rounded-xl p-6 border-2 border-card-border">
-                  <div className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest mb-2">
-                    <Clock className="w-5 h-5 stroke-[2.5]" /> EXECUTION LOG
+                <div className="bg-background/50 rounded-xl p-5 border border-card-border">
+                  <div className="flex items-center gap-2 text-sm font-medium mb-1 text-blue-400">
+                    <Clock className="w-4 h-4" /> Experiment History
                   </div>
-                  <div className="text-sm text-foreground/60 font-medium mb-6">Past executions of this scenario</div>
-                  <div className="space-y-4">
+                  <div className="text-xs text-foreground/50 mb-4">Past executions of this scenario</div>
+                  <div className="space-y-3">
                     {selectedScenario.experiments.length === 0 ? (
-                      <div className="text-sm text-foreground/60 font-medium flex items-center justify-center h-24 border-2 border-dashed border-card-border/50 rounded-xl bg-card">
+                      <div className="text-sm text-foreground/40 italic flex items-center justify-center h-20 border border-dashed border-card-border rounded-lg bg-card/30">
                         No experiments run yet
                       </div>
                     ) : (
                       selectedScenario.experiments.map(exp => (
-                        <div key={exp.id} className="flex items-center justify-between p-4 bg-card rounded-xl border-2 border-card-border">
+                        <div key={exp.id} className="flex items-center justify-between p-3 bg-card rounded-lg border border-card-border">
                           <div>
-                            <div className="text-base font-bold mb-1">{exp.name}</div>
-                            <div className="text-xs text-foreground/60 font-mono font-bold uppercase tracking-wider">{new Date(exp.startTime).toLocaleString()}</div>
+                            <div className="text-sm font-medium">{exp.name}</div>
+                            <div className="text-xs text-foreground/50">{new Date(exp.startTime).toLocaleString()}</div>
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border-2 ${
-                            exp.status === 'running' ? 'bg-[#c6c9df] text-[#373e80] border-[#373e80]' : 'bg-[#c6dfcd] text-[#378051] border-[#378051]'
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            exp.status === 'running' ? 'bg-blue-400/10 text-blue-400' : 'bg-success/10 text-success'
                           }`}>
                             {exp.status}
                           </span>
@@ -134,7 +134,7 @@ spec:
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-foreground/40 font-bold uppercase tracking-widest">
+          <div className="flex-1 flex items-center justify-center text-foreground/40 text-sm">
             Select a scenario to view details
           </div>
         )}
