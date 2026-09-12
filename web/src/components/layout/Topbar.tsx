@@ -1,10 +1,14 @@
 import { Bell, Search, Menu } from 'lucide-react';
 
-export function Topbar() {
+interface TopbarProps {
+  onMenuClick: () => void;
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
   return (
     <header className="bg-background/80 backdrop-blur-md h-14 sticky top-0 z-40 border-b border-card-border flex items-center justify-between px-4 lg:px-8">
       <div className="flex items-center gap-4">
-        <button className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-secondary transition-colors">
+        <button onClick={onMenuClick} className="md:hidden p-2 rounded-md text-foreground/70 hover:bg-secondary transition-colors">
           <Menu className="w-5 h-5" />
         </button>
         <div className="hidden md:flex items-center gap-2 text-sm text-foreground/50">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Play, Square, Activity, Zap, ShieldAlert, Wifi, RotateCcw, XCircle, FileWarning } from 'lucide-react';
 import { useChaosConfig } from '../hooks/useKairos';
 import { apiClient } from '../api/client';
@@ -6,14 +6,13 @@ import type { Proxy } from '../types';
 
 export function Chaos() {
   const { config, mutate } = useChaosConfig();
-  const [delayMs, setDelayMs] = useState(0);
+  
+  // Use config value if delayMs is 0, otherwise use local state
+  // This avoids setting state in effect while still allowing local edits
+  const [localDelayMs, setLocalDelayMs] = useState(0);
+  const delayMs = localDelayMs || config.latency_delay_ms || 0;
 
-  // Sync local state with remote config initially
-  useEffect(() => {
-    if (config.latency_delay_ms > 0) {
-      setDelayMs(config.latency_delay_ms);
-    }
-  }, [config.latency_delay_ms]);
+  const setDelayMs = (val: number) => setLocalDelayMs(val);
 
   const [proxies, setProxies] = useState<Proxy[]>([
     {

@@ -9,9 +9,26 @@ const navItems = [
   { name: 'Metrics', path: '/metrics', icon: Activity },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
-    <aside className="w-64 bg-background border-r border-card-border hidden md:flex flex-col h-full sticky top-0">
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside className={`fixed md:sticky top-0 h-screen z-50 w-64 bg-background border-r border-card-border flex flex-col transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
       <div className="p-5 flex items-center gap-3 border-b border-card-border">
         <div className="w-9 h-9 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 text-primary font-bold">
           K
@@ -51,5 +68,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }
