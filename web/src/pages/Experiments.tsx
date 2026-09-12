@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarClock, CheckCircle2, PlayCircle, Clock } from 'lucide-react';
+import { CalendarClock, CheckCircle2, PlayCircle, Clock, Zap } from 'lucide-react';
 import type { Experiment } from '../types';
 
 const mockExperiments: Experiment[] = [
@@ -17,7 +17,7 @@ const mockExperiments: Experiment[] = [
     name: 'Payment Gateway Aborts',
     status: 'running',
     targetProxyIds: ['proxy-payments'],
-    faults: [{ type: 'abort', percentage: 5, httpStatus: 503 }],
+    faults: [{ type: 'reset', percentage: 5 }],
     startTime: new Date(Date.now() - 1000 * 60 * 10).toISOString(), // started 10m ago
     endTime: new Date(Date.now() + 1000 * 60 * 20).toISOString(),
   },
@@ -32,7 +32,7 @@ const mockExperiments: Experiment[] = [
   }
 ];
 
-export function Timeline() {
+export function Experiments() {
   const [filter, setFilter] = useState<'all' | 'running' | 'scheduled' | 'completed'>('all');
 
   const filteredExperiments = filter === 'all' 
@@ -126,6 +126,31 @@ export function Timeline() {
                       ))}
                     </div>
                   </div>
+                  
+                  {isRunning && (
+                    <div className="mt-4 pt-4 border-t border-card-border flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <div className="text-xs font-medium text-foreground/50">Current Step:</div>
+                         <div className="text-sm font-semibold text-blue-400">Step 2: Database Latency</div>
+                      </div>
+                      <div className="text-xs font-mono text-foreground/60">
+                        Remaining: 1m 45s
+                      </div>
+                    </div>
+                  )}
+                  
+                  {isScheduled && (
+                    <div className="mt-4 pt-4 border-t border-card-border flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <div className="text-xs font-medium text-warning flex items-center gap-1">
+                           <Zap className="w-3 h-3" /> Waiting for Trigger
+                         </div>
+                      </div>
+                      <div className="text-xs text-foreground/60">
+                        Condition: HTTP 500 &gt; 5%
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );

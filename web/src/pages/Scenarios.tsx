@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layers, Plus, Play, MoreVertical, FileJson, Clock } from 'lucide-react';
+import { Layers, Plus, Play, MoreVertical, FileJson, Clock, Zap } from 'lucide-react';
 import type { Scenario } from '../types';
 
 const mockScenarios: Scenario[] = [
@@ -128,6 +128,39 @@ spec:
                         </div>
                       ))
                     )}
+                  </div>
+                </div>
+                <div className="bg-background/50 rounded-xl p-5 border border-card-border col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-sm font-medium text-warning">
+                      <Zap className="w-4 h-4" /> Triggers & Steps
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-card-border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center font-mono text-xs text-foreground/60">01</div>
+                        <div>
+                          <div className="text-sm font-medium">Wait for connection spike</div>
+                          <div className="text-xs text-foreground/50">Trigger: Connection Count &gt; 1000</div>
+                        </div>
+                      </div>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-secondary text-foreground/70">
+                        Trigger
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-primary/30 bg-primary/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-mono text-xs border border-primary/30">02</div>
+                        <div>
+                          <div className="text-sm font-medium">Inject Latency</div>
+                          <div className="text-xs text-foreground/50">Apply 500ms latency to all connections</div>
+                        </div>
+                      </div>
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-blue-500/10 text-blue-400">
+                        Duration: 120s
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

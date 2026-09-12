@@ -3,15 +3,11 @@ export interface ProxyConfig {
   targetUrl: string;
 }
 
-export interface FaultConfig {
-  type: 'latency' | 'abort' | 'bandwidth';
+export interface Fault {
+  type: 'latency' | 'jitter' | 'bandwidth' | 'packet_loss' | 'reset' | 'blackhole' | 'corruption';
   percentage: number;
-  // Latency fault
   delayMs?: number;
   jitterMs?: number;
-  // Abort fault
-  httpStatus?: number;
-  // Bandwidth fault
   rateLimitBytesPerSec?: number;
 }
 
@@ -19,34 +15,21 @@ export interface Proxy {
   id: string;
   config: ProxyConfig;
   status: 'active' | 'stopped';
-  activeFaults: FaultConfig[];
+  activeFaults: Fault[];
 }
 
-export interface Experiment {
+export interface Trigger {
+  type: 'timer' | 'connection_count' | 'bandwidth_threshold' | 'manual';
+  condition?: string;
+  status: 'waiting' | 'triggered';
+}
+
+export interface ScenarioStep {
   id: string;
   name: string;
-  status: 'scheduled' | 'running' | 'completed' | 'failed';
-  targetProxyIds: string[];
-  faults: FaultConfig[];
-  startTime: string; // ISO format
-  endTime?: string;  // ISO format
-}
-
-export interface MetricPoint {
-  timestamp: string; // ISO format
-  value: number;
-}
-
-export interface ProxyMetrics {
-  proxyId: string;
-  requestsTotal: number;
-  errorRate: number;
-  latencyAvg: number;
-  latencyP99: number;
-  // Time series for charts
-  latencyHistory: MetricPoint[];
-  requestHistory: MetricPoint[];
-  errorHistory: MetricPoint[];
+  durationMs: number;
+  faults: Fault[];
+  trigger?: Trigger;
 }
 
 export interface Scenario {
@@ -54,4 +37,26 @@ export interface Scenario {
   name: string;
   description: string;
   experiments: Experiment[];
+  steps?: ScenarioStep[];
+  globalTriggers?: Trigger[];
+}
+
+export interface Experiment {
+  id: string;
+  name: string;
+  status: 'running' | 'completed' | 'scheduled';
+  targetProxyIds: string[];
+  faults: Fault[];
+  startTime: string;
+  endTime?: string;
+}
+
+export interface Connection {
+  id: string;
+  clientAddr: string;
+  targetAddr: string;
+  uptime: string;
+  status: 'active' | 'closed';
+  bytesSent: number;
+  bytesReceived: number;
 }

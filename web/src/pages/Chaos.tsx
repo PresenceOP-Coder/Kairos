@@ -1,20 +1,36 @@
 import { useState } from 'react';
-import { Play, Square, Activity, Zap, ShieldAlert, Wifi } from 'lucide-react';
+import { Play, Square, Activity, Zap, ShieldAlert, Wifi, RotateCcw, XCircle, FileWarning } from 'lucide-react';
 import type { Proxy } from '../types';
 
-export function Controls() {
+export function Chaos() {
   const [proxies, setProxies] = useState<Proxy[]>([
     {
       id: 'proxy-1',
-      config: { listenAddr: ':8080', targetUrl: 'http://localhost:3000' },
+      config: { listenAddr: ':8080', targetUrl: '10.0.0.5:3000' },
       status: 'active',
-      activeFaults: [],
+      activeFaults: [
+        { type: 'latency', percentage: 100, delayMs: 200 },
+        { type: 'packet_loss', percentage: 5 }
+      ],
     },
     {
       id: 'proxy-2',
-      config: { listenAddr: ':8081', targetUrl: 'http://localhost:3001' },
+      config: { listenAddr: ':8081', targetUrl: '10.0.0.6:3001' },
+      status: 'active',
+      activeFaults: [
+        { type: 'bandwidth', percentage: 100, rateLimitBytesPerSec: 51200 },
+        { type: 'jitter', percentage: 100, jitterMs: 50 }
+      ],
+    },
+    {
+      id: 'proxy-db',
+      config: { listenAddr: ':5432', targetUrl: 'db.internal:5432' },
       status: 'stopped',
-      activeFaults: [{ type: 'latency', percentage: 100, delayMs: 500 }],
+      activeFaults: [
+        { type: 'reset', percentage: 1 },
+        { type: 'blackhole', percentage: 10 },
+        { type: 'corruption', percentage: 5 }
+      ],
     }
   ]);
 
@@ -24,12 +40,25 @@ export function Controls() {
     ));
   };
 
+  const getFaultIcon = (type: string) => {
+    switch (type) {
+      case 'latency': return <Activity className="w-4 h-4 text-blue-400" />;
+      case 'jitter': return <Zap className="w-4 h-4 text-purple-400" />;
+      case 'bandwidth': return <Wifi className="w-4 h-4 text-warning" />;
+      case 'packet_loss': return <FileWarning className="w-4 h-4 text-orange-400" />;
+      case 'reset': return <RotateCcw className="w-4 h-4 text-destructive" />;
+      case 'blackhole': return <XCircle className="w-4 h-4 text-gray-400" />;
+      case 'corruption': return <ShieldAlert className="w-4 h-4 text-red-500" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Live Chaos Controls</h2>
-          <p className="text-foreground/60 text-sm mt-1">Inject faults in real-time across active proxies.</p>
+          <p className="text-foreground/60 text-sm mt-1">Inject TCP faults in real-time across active proxies.</p>
         </div>
         <button className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-lg shadow-primary/20">
           <Zap className="w-4 h-4" />
@@ -43,7 +72,7 @@ export function Controls() {
             <div className="p-5 border-b border-card-border flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Activity className={`w-4 h-4 ${proxy.status === 'active' ? 'text-success' : 'text-foreground/40'}`} />
+                  <ShieldAlert className={`w-4 h-4 ${proxy.status === 'active' ? 'text-success' : 'text-foreground/40'}`} />
                   <h3 className="font-semibold text-lg">{proxy.id}</h3>
                 </div>
                 <div className="text-xs text-foreground/50 font-mono">
@@ -63,9 +92,9 @@ export function Controls() {
             </div>
             
             <div className="p-5 flex-1 bg-card/50">
-              <h4 className="text-sm font-medium mb-4 flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-warning" />
-                Active Faults
+              <h4 className="text-sm font-medium mb-4 flex items-center gap-2 text-foreground/80">
+                <Zap className="w-4 h-4 text-primary" />
+                Active TCP Faults
               </h4>
               
               {proxy.activeFaults.length === 0 ? (
@@ -77,15 +106,14 @@ export function Controls() {
                   {proxy.activeFaults.map((fault, idx) => (
                     <div key={idx} className="bg-background rounded-lg p-3 border border-card-border text-sm flex items-center justify-between">
                       <div className="flex items-center gap-2 capitalize">
-                        {fault.type === 'latency' && <Activity className="w-4 h-4 text-blue-400" />}
-                        {fault.type === 'abort' && <ShieldAlert className="w-4 h-4 text-destructive" />}
-                        {fault.type === 'bandwidth' && <Wifi className="w-4 h-4 text-warning" />}
-                        <span className="font-medium">{fault.type}</span>
+                        {getFaultIcon(fault.type)}
+                        <span className="font-medium text-foreground/90">{fault.type.replace('_', ' ')}</span>
                       </div>
-                      <div className="text-xs text-foreground/60 font-mono">
-                        {fault.percentage}% 
-                        {fault.delayMs && ` | ${fault.delayMs}ms`}
-                        {fault.httpStatus && ` | ${fault.httpStatus}`}
+                      <div className="text-xs text-foreground/60 font-mono text-right">
+                        <div>{fault.percentage}% probability</div>
+                        {fault.delayMs && <div className="text-primary/70">{fault.delayMs}ms delay</div>}
+                        {fault.jitterMs && <div className="text-purple-400/70">±{fault.jitterMs}ms jitter</div>}
+                        {fault.rateLimitBytesPerSec && <div className="text-warning/70">{(fault.rateLimitBytesPerSec/1024).toFixed(0)} KB/s</div>}
                       </div>
                     </div>
                   ))}
@@ -95,7 +123,7 @@ export function Controls() {
 
             <div className="p-4 border-t border-card-border bg-card/80">
               <button className="w-full py-2 bg-secondary hover:bg-secondary-hover text-secondary-foreground text-sm font-medium rounded-lg transition-colors">
-                Inject Fault
+                Configure Chaos
               </button>
             </div>
           </div>

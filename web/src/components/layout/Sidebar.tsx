@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Activity, Layers, CalendarClock, Settings } from 'lucide-react';
+import { LayoutDashboard, Zap, Layers, Activity, CalendarClock, Settings } from 'lucide-react';
 
 const navItems = [
-  { name: 'Live Controls', path: '/controls', icon: LayoutDashboard },
-  { name: 'Metrics', path: '/metrics', icon: Activity },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Chaos', path: '/chaos', icon: Zap },
   { name: 'Scenarios', path: '/scenarios', icon: Layers },
-  { name: 'Timeline', path: '/timeline', icon: CalendarClock },
+  { name: 'Experiments', path: '/experiments', icon: CalendarClock },
+  { name: 'Metrics', path: '/metrics', icon: Activity },
 ];
 
 export function Sidebar() {
@@ -23,7 +24,7 @@ export function Sidebar() {
       
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <div className="text-xs font-semibold text-foreground/40 uppercase tracking-wider mb-2 px-3 pt-2">
-          Dashboard
+          Overview
         </div>
         {navItems.map((item) => (
           <NavLink

@@ -1,4 +1,4 @@
-import type { Proxy, Experiment, ProxyMetrics, Scenario, FaultConfig } from '../types';
+import type { Proxy, Experiment, Scenario, Fault } from '../types';
 
 const API_BASE = '/api/v1'; // Assuming Vite proxies this to the Go backend
 
@@ -40,7 +40,7 @@ class KairosApiClient {
     return this.fetch<void>(`/proxies/${id}`, { method: 'DELETE' });
   }
 
-  async updateProxyFaults(id: string, faults: FaultConfig[]): Promise<Proxy> {
+  async updateProxyFaults(id: string, faults: Fault[]): Promise<Proxy> {
     return this.fetch<Proxy>(`/proxies/${id}/faults`, {
       method: 'PUT',
       body: JSON.stringify({ faults }),
@@ -64,9 +64,9 @@ class KairosApiClient {
   }
 
   // Metrics
-  async getMetrics(proxyId?: string): Promise<ProxyMetrics[]> {
+  async getMetrics(proxyId?: string): Promise<any[]> {
     const url = proxyId ? `/metrics?proxyId=${proxyId}` : '/metrics';
-    return this.fetch<ProxyMetrics[]>(url);
+    return this.fetch<any[]>(url);
   }
 
   // Scenarios
