@@ -20,6 +20,16 @@ export interface SystemStats {
   active_proxies: number;
 }
 
+export interface ChaosResponse {
+  latency_enabled: boolean;
+  latency_delay_ms: number;
+}
+
+export interface LatencyRequest {
+  enabled: boolean;
+  delay_ms: number;
+}
+
 class KairosApiClient {
   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const response = await fetch(endpoint, {
@@ -70,11 +80,18 @@ class KairosApiClient {
     }
   }
 
-  // TODO: Add strict typings for Chaos payloads once backend is finalized
-  async setChaos(config: any): Promise<void> {
-    return this.fetch<void>('/chaos', {
+  async getChaos(): Promise<ChaosResponse> {
+    try {
+      return await this.fetch<ChaosResponse>('/chaos');
+    } catch {
+      return { latency_enabled: false, latency_delay_ms: 0 };
+    }
+  }
+
+  async setLatency(req: LatencyRequest): Promise<void> {
+    return this.fetch<void>('/chaos/latency', {
       method: 'POST',
-      body: JSON.stringify(config)
+      body: JSON.stringify(req)
     });
   }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
-import type { SystemHealth, SystemStats } from '../api/client';
+import type { SystemHealth, SystemStats, ChaosResponse } from '../api/client';
 import type { Connection } from '../types';
 
 export function useSystemHealth(pollingInterval = 5000) {
@@ -74,4 +74,31 @@ export function useConnections(pollingInterval = 2000) {
   }, [pollingInterval]);
 
   return connections;
+}
+
+export function useChaosConfig(pollingInterval = 2000) {
+  const [config, setConfig] = useState<ChaosResponse>({ latency_enabled: false, latency_delay_ms: 0 });
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchConfig = async () => {
+      const data = await apiClient.getChaos();
+      if (mounted) setConfig(data);
+    };
+
+    fetchConfig();
+    const interval = setInterval(fetchConfig, pollingInterval);
+    
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [pollingInterval]);
+
+  const mutate = async () => {
+      const data = await apiClient.getChaos();
+      setConfig(data);
+  }
+
+  return { config, mutate };
 }
