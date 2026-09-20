@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../api/client';
 import type { SystemHealth, SystemStats, ChaosResponse } from '../api/client';
-import type { Connection } from '../types';
+import type { Connection, Scenario, Experiment } from '../types';
 
 export function useSystemHealth(pollingInterval = 5000) {
   const [health, setHealth] = useState<SystemHealth>({ status: 'unknown' });
@@ -103,28 +103,38 @@ export function useChaosConfig(pollingInterval = 2000) {
   return { config, mutate };
 }
 
-export function useCurrentScenario(pollingInterval = 3000) {
-  const [scenario, setScenario] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export function useScenarios(pollingInterval = 5000) {
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
 
   useEffect(() => {
     let mounted = true;
-    const fetchScenario = async () => {
-      const data = await apiClient.getScenario();
-      if (mounted) {
-        setScenario(data);
-        setLoading(false);
-      }
+    const fetchScenarios = async () => {
+      const data = await apiClient.getScenarios();
+      if (mounted && Array.isArray(data)) setScenarios(data);
     };
 
-    fetchScenario();
-    const interval = setInterval(fetchScenario, pollingInterval);
-    
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
+    fetchScenarios();
+    const interval = setInterval(fetchScenarios, pollingInterval);
+    return () => { mounted = false; clearInterval(interval); };
   }, [pollingInterval]);
 
-  return { scenario, loading };
+  return scenarios;
+}
+
+export function useExperiments(pollingInterval = 5000) {
+  const [experiments, setExperiments] = useState<Experiment[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchExperiments = async () => {
+      const data = await apiClient.getExperiments();
+      if (mounted && Array.isArray(data)) setExperiments(data);
+    };
+
+    fetchExperiments();
+    const interval = setInterval(fetchExperiments, pollingInterval);
+    return () => { mounted = false; clearInterval(interval); };
+  }, [pollingInterval]);
+
+  return experiments;
 }

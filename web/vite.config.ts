@@ -27,10 +27,6 @@ export default defineConfig({
       '/chaos': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-      },
-      '/scenario': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
       }
     }
   }

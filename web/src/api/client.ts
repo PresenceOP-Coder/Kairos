@@ -1,4 +1,4 @@
-import type { Connection } from '../types';
+import type { Connection, Scenario, Experiment } from '../types';
 
 // The Go backend currently exposes routes at the root level:
 // GET /health
@@ -80,6 +80,22 @@ class KairosApiClient {
     }
   }
 
+  async getScenarios(): Promise<Scenario[]> {
+    try {
+      return await this.fetch<Scenario[]>('/scenarios');
+    } catch {
+      return [];
+    }
+  }
+
+  async getExperiments(): Promise<Experiment[]> {
+    try {
+      return await this.fetch<Experiment[]>('/experiments');
+    } catch {
+      return [];
+    }
+  }
+
   async getChaos(): Promise<ChaosResponse> {
     try {
       return await this.fetch<ChaosResponse>('/chaos');
@@ -93,14 +109,6 @@ class KairosApiClient {
       method: 'POST',
       body: JSON.stringify(req)
     });
-  }
-
-  async getScenario(): Promise<any> {
-    try {
-      return await this.fetch<any>('/scenario');
-    } catch {
-      return null;
-    }
   }
 }
 

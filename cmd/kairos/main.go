@@ -60,7 +60,7 @@ func main() {
 
 			p.Use(middleware.NewBlackholeMiddleware(cfg))
 			// Start the control-plane API in the background.
-			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg, s)
+			apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
 			go func() {
 				if err := apiServer.Start(":8080"); err != nil {
 					log.Printf("API server error: %v", err)
