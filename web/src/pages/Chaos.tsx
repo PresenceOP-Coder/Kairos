@@ -5,7 +5,7 @@ import { apiClient } from '../api/client';
 import type { Proxy } from '../types';
 
 export function Chaos() {
-  const { config, mutate } = useChaosConfig();
+  const { config, mutate, loading, error } = useChaosConfig();
   
   // Use config value if delayMs is 0, otherwise use local state
   // This avoids setting state in effect while still allowing local edits
@@ -93,54 +93,64 @@ export function Chaos() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Latency Control */}
-          <div className="bg-background/50 border border-card-border p-5 rounded-xl flex flex-col justify-between">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <div className="flex items-center gap-2 font-medium">
-                  <Activity className="w-4 h-4 text-blue-400" /> Latency Injection
+        {loading ? (
+          <div className="flex items-center justify-center p-8 text-foreground/50">
+            Loading configuration...
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center p-8 text-destructive">
+            Failed to load chaos configuration. Is the proxy running?
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Latency Control */}
+            <div className="bg-background/50 border border-card-border p-5 rounded-xl flex flex-col justify-between">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 font-medium">
+                    <Activity className="w-4 h-4 text-blue-400" /> Latency Injection
+                  </div>
+                  <div className="text-xs text-foreground/50 mt-1">Add artificial delay to all packets</div>
                 </div>
-                <div className="text-xs text-foreground/50 mt-1">Add artificial delay to all packets</div>
-              </div>
-              <button 
-                onClick={handleLatencyToggle}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${config.latency_enabled ? 'bg-primary' : 'bg-secondary'}`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.latency_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input 
-                type="number"
-                value={delayMs}
-                onChange={(e) => setDelayMs(parseInt(e.target.value) || 0)}
-                disabled={!config.latency_enabled}
-                className="bg-card border border-card-border rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:border-primary disabled:opacity-50"
-                placeholder="ms"
-              />
-              <span className="text-sm text-foreground/50">milliseconds</span>
-              
-              {config.latency_enabled && (
                 <button 
-                  onClick={handleLatencyUpdate}
-                  className="ml-auto bg-secondary hover:bg-secondary-hover text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  onClick={handleLatencyToggle}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${config.latency_enabled ? 'bg-primary' : 'bg-secondary'}`}
                 >
-                  Apply
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.latency_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Placeholders for future global faults */}
-          <div className="bg-background/30 border border-card-border border-dashed p-5 rounded-xl flex items-center justify-center opacity-50">
-            <div className="text-center text-sm text-foreground/60">
-              <div className="flex justify-center mb-2"><Wifi className="w-5 h-5 text-warning" /></div>
-              Bandwidth Controls (Coming soon)
+              <div className="flex items-center gap-3">
+                <input 
+                  type="number"
+                  value={delayMs}
+                  onChange={(e) => setDelayMs(parseInt(e.target.value) || 0)}
+                  disabled={!config.latency_enabled}
+                  className="bg-card border border-card-border rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:border-primary disabled:opacity-50"
+                  placeholder="ms"
+                />
+                <span className="text-sm text-foreground/50">milliseconds</span>
+                
+                {config.latency_enabled && (
+                  <button 
+                    onClick={handleLatencyUpdate}
+                    className="ml-auto bg-secondary hover:bg-secondary-hover text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Apply
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Placeholders for future global faults */}
+            <div className="bg-background/30 border border-card-border border-dashed p-5 rounded-xl flex items-center justify-center opacity-50">
+              <div className="text-center text-sm text-foreground/60">
+                <div className="flex justify-center mb-2"><Wifi className="w-5 h-5 text-warning" /></div>
+                Bandwidth Controls (Coming soon)
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Per-Proxy Mock view */}

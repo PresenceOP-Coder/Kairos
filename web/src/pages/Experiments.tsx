@@ -6,7 +6,7 @@ import { CalendarClock, CheckCircle2, PlayCircle, Clock, Zap } from 'lucide-reac
 import { useExperiments } from '../hooks/useKairos';
 
 export function Experiments() {
-  const liveExperiments = useExperiments();
+  const { experiments: liveExperiments, loading, error } = useExperiments();
   const [filter, setFilter] = useState<'all' | 'running' | 'scheduled' | 'completed'>('all');
 
   const filteredExperiments = filter === 'all' 
@@ -34,7 +34,11 @@ export function Experiments() {
       </div>
 
       <div className="relative border-l border-card-border ml-4 md:ml-6 space-y-8 py-4">
-        {filteredExperiments.length === 0 ? (
+        {loading ? (
+          <div className="pl-8 text-foreground/50 text-sm">Loading experiments...</div>
+        ) : error ? (
+          <div className="pl-8 text-destructive text-sm">Failed to load experiments</div>
+        ) : filteredExperiments.length === 0 ? (
           <div className="pl-8 text-foreground/40 text-sm italic">No experiments found.</div>
         ) : (
           filteredExperiments.map((exp) => {

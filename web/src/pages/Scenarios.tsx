@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { Layers, Plus, Play, MoreVertical, FileJson, Clock, Zap } from 'lucide-react';
+import { Plus, Play, MoreVertical, FileJson, Clock, Zap } from 'lucide-react';
 import type { Scenario } from '../types';
 import { useScenarios } from '../hooks/useKairos';
 
 export function Scenarios() {
-  const scenarios = useScenarios();
+  const { scenarios, loading, error } = useScenarios();
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6">
-      {/* Scenario List */}
-      <div className="w-1/3 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-6">
+      {/* Left Sidebar - Scenario List */}
+      <div className="w-full md:w-1/3 border border-card-border rounded-xl bg-card/50 flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-card-border flex items-center justify-between bg-background">
           <h2 className="text-2xl font-bold tracking-tight">Scenarios</h2>
           <button className="p-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors shadow-lg shadow-primary/20">
             <Plus className="w-4 h-4" />
@@ -19,25 +19,34 @@ export function Scenarios() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-          {scenarios.map(scenario => (
-            <div 
-              key={scenario.id} 
-              onClick={() => setSelectedScenario(scenario)}
-              className={`glass-panel p-4 cursor-pointer transition-all duration-200 border ${
-                selectedScenario?.id === scenario.id 
-                  ? 'border-primary bg-primary/5 shadow-lg shadow-primary/5' 
-                  : 'border-transparent hover:border-primary/30 hover:bg-card-border/30'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold">{scenario.name}</h3>
-                <Layers className={`w-4 h-4 ${selectedScenario?.id === scenario.id ? 'text-primary' : 'text-foreground/40'}`} />
+          {loading ? (
+            <div className="text-center p-4 text-foreground/50 text-sm">Loading scenarios...</div>
+          ) : error ? (
+            <div className="text-center p-4 text-destructive text-sm">Failed to load scenarios</div>
+          ) : scenarios.length === 0 ? (
+            <div className="text-center p-4 text-foreground/50 text-sm">No scenarios found</div>
+          ) : (
+            scenarios.map(scenario => (
+              <div 
+                key={scenario.id} 
+                onClick={() => setSelectedScenario(scenario)}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedScenario?.id === scenario.id 
+                    ? 'bg-primary/10 border-primary shadow-sm' 
+                    : 'bg-card border-card-border hover:border-primary/40 hover:bg-card/80'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className={`font-semibold ${selectedScenario?.id === scenario.id ? 'text-primary' : 'text-foreground'}`}>
+                      {scenario.name}
+                    </h3>
+                    <p className="text-xs text-foreground/60 mt-1 line-clamp-2">{scenario.description}</p>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-foreground/60 line-clamp-2">
-                {scenario.description}
-              </p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
