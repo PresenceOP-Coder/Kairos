@@ -10,7 +10,7 @@ export function Chaos() {
   // Use config value if delayMs is 0, otherwise use local state
   // This avoids setting state in effect while still allowing local edits
   const [localDelayMs, setLocalDelayMs] = useState(0);
-  const delayMs = localDelayMs || config.latency_delay_ms || 0;
+  const delayMs = localDelayMs || config?.latency_delay_ms || 0;
 
   const setDelayMs = (val: number) => setLocalDelayMs(val);
 
@@ -36,6 +36,7 @@ export function Chaos() {
   };
 
   const handleLatencyToggle = async () => {
+    if (!config) return;
     const newEnabled = !config.latency_enabled;
     const finalDelay = delayMs || 500; // default to 500ms if 0
     
@@ -51,7 +52,7 @@ export function Chaos() {
   };
 
   const handleLatencyUpdate = async () => {
-    if (!config.latency_enabled) return;
+    if (!config || !config.latency_enabled) return;
     await apiClient.setLatency({
       enabled: true,
       delay_ms: delayMs
@@ -187,7 +188,7 @@ export function Chaos() {
                   Active TCP Faults
                 </h4>
                 
-                {config.latency_enabled ? (
+                {config?.latency_enabled ? (
                   <div className="space-y-3">
                       <div className="bg-background rounded-lg p-3 border border-primary/30 bg-primary/5 text-sm flex items-center justify-between">
                         <div className="flex items-center gap-2 capitalize">

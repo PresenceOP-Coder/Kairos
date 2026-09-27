@@ -86,4 +86,26 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('10.0.0.1')).toBeInTheDocument();
     expect(screen.getByText('123')).toBeInTheDocument();
   });
+
+  it('renders empty connection state correctly', () => {
+    vi.mocked(useSystemHealth).mockReturnValue({
+      health: { status: 'ok' },
+      loading: false,
+      error: null
+    });
+    vi.mocked(useSystemStats).mockReturnValue({
+      stats: { active_connections: 0, bytes_sent: 0, bytes_received: 0, active_proxies: 0 },
+      loading: false,
+      error: null
+    });
+    vi.mocked(useConnections).mockReturnValue({
+      connections: [],
+      loading: false,
+      error: null
+    });
+
+    render(<Dashboard />);
+    
+    expect(screen.getByText('No active connections')).toBeInTheDocument();
+  });
 });
