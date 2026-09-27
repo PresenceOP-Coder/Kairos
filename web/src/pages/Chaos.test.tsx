@@ -27,7 +27,7 @@ describe('Chaos Component', () => {
     });
 
     render(<Chaos />);
-    
+
     expect(screen.getByText('Loading configuration...')).toBeInTheDocument();
   });
 
@@ -39,14 +39,14 @@ describe('Chaos Component', () => {
     });
 
     render(<Chaos />);
-    
+
     expect(screen.getByText('Failed to load chaos configuration. Is the proxy running?')).toBeInTheDocument();
   });
 
   it('renders controls and handles toggle/update interaction', async () => {
     const mutateMock = vi.fn();
     vi.mocked(useChaosConfig).mockReturnValue({
-      config: { latency_enabled: false, latency_delay_ms: 50 },
+      config: { latency_enabled: false, latency_delay_ms: 0 },
       loading: false,
       error: null,
       mutate: mutateMock
@@ -55,20 +55,39 @@ describe('Chaos Component', () => {
     vi.mocked(apiClient.setLatency).mockResolvedValueOnce();
 
     render(<Chaos />);
-    
-    // Check if the latency block is rendered
-    expect(screen.getByText('Latency Injection')).toBeInTheDocument();
-    
-    // Find the toggle (it's a button role in the UI usually, or a div we can click)
-    // Looking at Chaos.tsx, the toggle is a div wrapping a slider.
-    const toggleButtons = screen.getAllByRole('button');
-    // Assuming the first button is the latency toggle
-    const latencyToggle = toggleButtons[0];
-    
-    fireEvent.click(latencyToggle);
+
+    const toggle = screen.getByRole('button', { name: 'Toggle latency' });
+    fireEvent.click(toggle);
 
     await waitFor(() => {
-      expect(apiClient.setLatency).toHaveBeenCalledWith({ enabled: true, delay_ms: 50 });
+      expect(apiClient.setLatency).toHaveBeenCalledWith({ enabled: true, delay_ms: 500 });
     });
+
+    expect(mutateMock).toHaveBeenCalled();
+  });
+
+  it('updates latency delay when Apply is clicked', async () => {
+    const mutateMock = vi.fn();
+    vi.mocked(useChaosConfig).mockReturnValue({
+      config: { latency_enabled: true, latency_delay_ms: 100 },
+      loading: false,
+      error: null,
+      mutate: mutateMock
+    } as any);
+
+    vi.mocked(apiClient.setLatency).mockResolvedValueOnce();
+
+    render(<Chaos />);
+
+    const input = screen.getByRole('spinbutton');
+    fireEvent.change(input, { target: { value: '750' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    await waitFor(() => {
+      expect(apiClient.setLatency).toHaveBeenCalledWith({ enabled: true, delay_ms: 750 });
+    });
+
+    expect(mutateMock).toHaveBeenCalled();
   });
 });

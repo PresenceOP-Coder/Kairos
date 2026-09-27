@@ -114,6 +114,7 @@ export function Chaos() {
                   <div className="text-xs text-foreground/50 mt-1">Add artificial delay to all packets</div>
                 </div>
                 <button 
+                  aria-label="Toggle latency"
                   onClick={handleLatencyToggle}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${config.latency_enabled ? 'bg-primary' : 'bg-secondary'}`}
                 >
