@@ -79,5 +79,8 @@ describe('Scenarios Component', () => {
     // Check if right panel updates
     expect(screen.getAllByText('Injects 500ms latency').length).toBe(2);
     expect(screen.getByText('Wait for connection spike')).toBeInTheDocument(); // dummy trigger text
+    
+    // Check if Run Now button appears
+    expect(screen.getByRole('button', { name: /Run Now/i })).toBeInTheDocument();
   });
 });
