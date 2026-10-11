@@ -1,23 +1,39 @@
 import { useState } from 'react';
-import { Play, Square, Activity, Zap, ShieldAlert, Wifi, RotateCcw, XCircle, FileWarning } from 'lucide-react';
+import { Play, Square, Activity, Zap, Wifi, RotateCcw, XCircle, FileWarning, Terminal, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useChaosConfig } from '../hooks/useKairos';
 import { apiClient } from '../api/client';
 import type { Proxy } from '../types';
 
 export function Chaos() {
   const { config, mutate, loading, error } = useChaosConfig();
-  
-  // Use config value if delayMs is 0, otherwise use local state
-  // This avoids setting state in effect while still allowing local edits
+
   const [localDelayMs, setLocalDelayMs] = useState(0);
   const delayMs = localDelayMs || config?.latency_delay_ms || 0;
-
   const setDelayMs = (val: number) => setLocalDelayMs(val);
+
+  // Status feedback for terminal commands
+  const [cliFeedback, setCliFeedback] = useState<string>('System nominal. Ready for fault injection.');
+
+  // Simulation state for other toxics
+  const [jitterEnabled, setJitterEnabled] = useState(false);
+  const [jitterMin, setJitterMin] = useState(100);
+  const [jitterMax, setJitterMax] = useState(300);
+
+  const [bandwidthEnabled, setBandwidthEnabled] = useState(false);
+  const [bandwidthRate, setBandwidthRate] = useState(256);
+
+  const [resetEnabled, setResetEnabled] = useState(false);
+  const [resetAfter, setResetAfter] = useState(10);
+
+  const [packetLossEnabled, setPacketLossEnabled] = useState(false);
+  const [packetLossPercent, setPacketLossPercent] = useState(20);
+
+  const [blackholeEnabled, setBlackholeEnabled] = useState(false);
 
   const [proxies, setProxies] = useState<Proxy[]>([
     {
       id: 'proxy-1',
-      config: { listenAddr: ':8080', targetUrl: '10.0.0.5:3000' },
+      config: { listenAddr: ':9000', targetUrl: '127.0.0.1:9001' },
       status: 'active',
       activeFaults: [],
     },
@@ -26,187 +42,451 @@ export function Chaos() {
       config: { listenAddr: ':5432', targetUrl: 'db.internal:5432' },
       status: 'stopped',
       activeFaults: [],
-    }
+    },
   ]);
 
   const toggleProxyStatus = (id: string) => {
-    setProxies(proxies.map(p => 
-      p.id === id ? { ...p, status: p.status === 'active' ? 'stopped' : 'active' } : p
-    ));
+    setProxies(
+      proxies.map((p) =>
+        p.id === id ? { ...p, status: p.status === 'active' ? 'stopped' : 'active' } : p
+      )
+    );
   };
 
   const handleLatencyToggle = async () => {
     if (!config) return;
     const newEnabled = !config.latency_enabled;
-    const finalDelay = delayMs || 500; // default to 500ms if 0
-    
-    await apiClient.setLatency({
-      enabled: newEnabled,
-      delay_ms: finalDelay
-    });
-    
-    if (newEnabled) {
-      setDelayMs(finalDelay);
+    const finalDelay = delayMs || 500;
+
+    try {
+      await apiClient.setLatency({
+        enabled: newEnabled,
+        delay_ms: finalDelay,
+      });
+
+      if (newEnabled) {
+        setDelayMs(finalDelay);
+        setCliFeedback(`[OK] chaos latency --enable --delay ${finalDelay}ms applied`);
+      } else {
+        setCliFeedback(`[OK] chaos latency --disable applied`);
+      }
+      await mutate();
+    } catch {
+      setCliFeedback(`[ERROR] Failed to update latency via control plane`);
     }
-    await mutate();
   };
 
   const handleLatencyUpdate = async () => {
     if (!config || !config.latency_enabled) return;
-    await apiClient.setLatency({
-      enabled: true,
-      delay_ms: delayMs
-    });
-    await mutate();
-  };
-
-  const getFaultIcon = (type: string) => {
-    switch (type) {
-      case 'latency': return <Activity className="w-4 h-4 text-blue-400" />;
-      case 'jitter': return <Zap className="w-4 h-4 text-purple-400" />;
-      case 'bandwidth': return <Wifi className="w-4 h-4 text-warning" />;
-      case 'packet_loss': return <FileWarning className="w-4 h-4 text-orange-400" />;
-      case 'reset': return <RotateCcw className="w-4 h-4 text-destructive" />;
-      case 'blackhole': return <XCircle className="w-4 h-4 text-gray-400" />;
-      case 'corruption': return <ShieldAlert className="w-4 h-4 text-red-500" />;
-      default: return <Activity className="w-4 h-4" />;
+    try {
+      await apiClient.setLatency({
+        enabled: true,
+        delay_ms: delayMs,
+      });
+      setCliFeedback(`[OK] chaos latency --delay ${delayMs}ms updated successfully`);
+      await mutate();
+    } catch {
+      setCliFeedback(`[ERROR] Failed to update latency delay`);
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 font-mono">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#21262D]">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Live Chaos Controls</h2>
-          <p className="text-foreground/60 text-sm mt-1">Inject TCP faults in real-time across active proxies.</p>
+          <div className="flex items-center gap-2 text-xs text-[#8B949E]">
+            <span>CONTROL_PLANE</span>
+            <span>//</span>
+            <span className="text-[#39FF88]">FAULT_INJECTION_ENGINE</span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-[#E6EDF3] mt-0.5">Live Chaos Controls</h2>
+        </div>
+
+        {/* CLI Prompt Banner */}
+        <div className="px-3 py-1.5 bg-[#0D1117] border border-[#21262D] text-xs text-[#E6EDF3] flex items-center gap-2">
+          <Terminal className="w-3.5 h-3.5 text-[#39FF88]" />
+          <span className="text-[#8B949E]">CMD:</span>
+          <span className="text-[#39FF88] font-bold">
+            {config?.latency_enabled ? `chaos latency --delay=${delayMs}ms` : 'chaos --status=idle'}
+          </span>
         </div>
       </div>
 
-      {/* Global Chaos Config */}
-      <div className="glass-panel p-6 rounded-xl border-primary/30 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
-        <div className="flex items-center justify-between mb-6">
+      {/* Terminal Command Feedback Ribbon */}
+      <div className="bg-[#080B10] border border-[#21262D] px-4 py-2 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-[#E6EDF3]">
+          <span className="text-[#00D9FF]">root@kairos:~#</span>
+          <span className="text-[#8B949E]">{cliFeedback}</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] text-[#39FF88]">
+          <CheckCircle2 className="w-3 h-3 text-[#39FF88]" />
+          <span>SYS_READY</span>
+        </div>
+      </div>
+
+      {/* Global Chaos Configuration Panel */}
+      <div className="bg-[#0D1117] border border-[#21262D] p-5">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#21262D]">
           <div>
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" /> Global Configuration
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#E6EDF3] flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#39FF88]" />
+              <span>Global Configuration</span>
             </h3>
-            <p className="text-sm text-foreground/60 mt-1">Faults applied globally across all active proxies</p>
+            <p className="text-xs text-[#8B949E] mt-0.5">Runtime fault injection applied across all incoming TCP streams</p>
           </div>
+          <span className="text-[10px] px-2 py-0.5 border border-[#39FF88]/40 bg-[#39FF88]/10 text-[#39FF88] font-bold">
+            DATA_PLANE_ACTIVE
+          </span>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center p-8 text-foreground/50">
+          <div className="p-8 text-center text-xs text-[#8B949E]">
             Loading configuration...
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center p-8 text-destructive">
+          <div className="p-8 text-center text-xs text-[#FF5C6C]">
             Failed to load chaos configuration. Is the proxy running?
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Latency Control */}
-            <div className="bg-background/50 border border-card-border p-5 rounded-xl flex flex-col justify-between">
-              <div className="flex items-start justify-between mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Toxic 1: Latency Injection (LIVE API WIRED) */}
+            <div className={`p-4 border transition-all ${
+              config.latency_enabled ? 'bg-[#080B10] border-[#39FF88] shadow-[0_0_12px_rgba(57,255,136,0.1)]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="flex items-center gap-2 font-medium">
-                    <Activity className="w-4 h-4 text-blue-400" /> Latency Injection
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <Activity className="w-4 h-4 text-[#00D9FF]" />
+                    <span>01 // LATENCY_INJECTION</span>
                   </div>
-                  <div className="text-xs text-foreground/50 mt-1">Add artificial delay to all packets</div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Post-read stream delay</span>
                 </div>
-                <button 
+                <button
                   aria-label="Toggle latency"
                   onClick={handleLatencyToggle}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${config.latency_enabled ? 'bg-primary' : 'bg-secondary'}`}
+                  className={`relative inline-flex h-5 w-10 items-center transition-colors focus:outline-none border ${
+                    config.latency_enabled
+                      ? 'bg-primary border-[#39FF88]'
+                      : 'bg-secondary border-[#21262D]'
+                  }`}
                 >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.latency_enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] border border-[#21262D] transition-transform ${
+                      config.latency_enabled ? 'translate-x-5 bg-[#080B10]' : 'translate-x-1 bg-[#8B949E]'
+                    }`}
+                  />
                 </button>
               </div>
 
-              <div className="flex items-center gap-3">
-                <input 
-                  type="number"
-                  value={delayMs}
-                  onChange={(e) => setDelayMs(parseInt(e.target.value) || 0)}
-                  disabled={!config.latency_enabled}
-                  className="bg-card border border-card-border rounded-lg px-3 py-2 text-sm w-32 focus:outline-none focus:border-primary disabled:opacity-50"
-                  placeholder="ms"
-                />
-                <span className="text-sm text-foreground/50">milliseconds</span>
-                
-                {config.latency_enabled && (
-                  <button 
-                    onClick={handleLatencyUpdate}
-                    className="ml-auto bg-secondary hover:bg-secondary-hover text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    Apply
-                  </button>
-                )}
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-[#8B949E] shrink-0">DELAY:</span>
+                  <input
+                    type="number"
+                    value={delayMs}
+                    onChange={(e) => setDelayMs(parseInt(e.target.value) || 0)}
+                    disabled={!config.latency_enabled}
+                    placeholder="ms"
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs text-[#E6EDF3] w-24 focus:outline-none focus:border-[#39FF88] disabled:opacity-40"
+                  />
+                  <span className="text-[11px] text-[#8B949E]">ms</span>
+
+                  {config.latency_enabled && (
+                    <button
+                      onClick={handleLatencyUpdate}
+                      className="ml-auto bg-[#161B22] hover:bg-[#21262D] text-[#39FF88] border border-[#39FF88]/40 hover:border-[#39FF88] text-[11px] font-bold px-2.5 py-1 transition-colors"
+                    >
+                      Apply
+                    </button>
+                  )}
+                </div>
+
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={config.latency_enabled ? 'text-[#39FF88] font-bold' : 'text-[#8B949E]'}>
+                    {config.latency_enabled ? `ACTIVE (${delayMs}ms)` : 'DISABLED'}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Placeholders for future global faults */}
-            <div className="bg-background/30 border border-card-border border-dashed p-5 rounded-xl flex items-center justify-center opacity-50">
-              <div className="text-center text-sm text-foreground/60">
-                <div className="flex justify-center mb-2"><Wifi className="w-5 h-5 text-warning" /></div>
-                Bandwidth Controls (Coming soon)
+            {/* Toxic 2: Jitter */}
+            <div className={`p-4 border transition-all ${
+              jitterEnabled ? 'bg-[#080B10] border-[#B388FF]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <Zap className="w-4 h-4 text-[#B388FF]" />
+                    <span>02 // JITTER_VARIANCE</span>
+                  </div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Randomized delay range</span>
+                </div>
+                <button
+                  onClick={() => setJitterEnabled(!jitterEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center border ${
+                    jitterEnabled ? 'bg-[#B388FF] border-[#B388FF]' : 'bg-[#161B22] border-[#21262D]'
+                  }`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] transition-transform ${
+                    jitterEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="flex items-center gap-2 text-xs">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={jitterMin}
+                    onChange={(e) => setJitterMin(parseInt(e.target.value) || 0)}
+                    disabled={!jitterEnabled}
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs w-16 disabled:opacity-40"
+                  />
+                  <span className="text-[#8B949E]">to</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={jitterMax}
+                    onChange={(e) => setJitterMax(parseInt(e.target.value) || 0)}
+                    disabled={!jitterEnabled}
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs w-16 disabled:opacity-40"
+                  />
+                  <span className="text-[#8B949E] text-[11px]">ms</span>
+                </div>
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={jitterEnabled ? 'text-[#B388FF] font-bold' : 'text-[#8B949E]'}>
+                    {jitterEnabled ? `[${jitterMin}-${jitterMax}ms]` : 'DISABLED'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toxic 3: Bandwidth Throttling */}
+            <div className={`p-4 border transition-all ${
+              bandwidthEnabled ? 'bg-[#080B10] border-[#FFB454]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <Wifi className="w-4 h-4 text-[#FFB454]" />
+                    <span>03 // BANDWIDTH_LIMIT</span>
+                  </div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Chunked write pacing</span>
+                </div>
+                <button
+                  onClick={() => setBandwidthEnabled(!bandwidthEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center border ${
+                    bandwidthEnabled ? 'bg-[#FFB454] border-[#FFB454]' : 'bg-[#161B22] border-[#21262D]'
+                  }`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] transition-transform ${
+                    bandwidthEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-[11px] text-[#8B949E]">RATE:</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={bandwidthRate}
+                    onChange={(e) => setBandwidthRate(parseInt(e.target.value) || 0)}
+                    disabled={!bandwidthEnabled}
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs w-20 disabled:opacity-40"
+                  />
+                  <span className="text-[#8B949E] text-[11px]">KB/s</span>
+                </div>
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={bandwidthEnabled ? 'text-[#FFB454] font-bold' : 'text-[#8B949E]'}>
+                    {bandwidthEnabled ? `${bandwidthRate} KB/s` : 'DISABLED'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toxic 4: Connection Reset */}
+            <div className={`p-4 border transition-all ${
+              resetEnabled ? 'bg-[#080B10] border-[#FF5C6C]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <RotateCcw className="w-4 h-4 text-[#FF5C6C]" />
+                    <span>04 // TCP_RESET</span>
+                  </div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Abrupt socket teardown</span>
+                </div>
+                <button
+                  onClick={() => setResetEnabled(!resetEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center border ${
+                    resetEnabled ? 'bg-[#FF5C6C] border-[#FF5C6C]' : 'bg-[#161B22] border-[#21262D]'
+                  }`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] transition-transform ${
+                    resetEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-[11px] text-[#8B949E]">AFTER:</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={resetAfter}
+                    onChange={(e) => setResetAfter(parseInt(e.target.value) || 0)}
+                    disabled={!resetEnabled}
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs w-20 disabled:opacity-40"
+                  />
+                  <span className="text-[#8B949E] text-[11px]">sec</span>
+                </div>
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={resetEnabled ? 'text-[#FF5C6C] font-bold' : 'text-[#8B949E]'}>
+                    {resetEnabled ? `DROP AFTER ${resetAfter}s` : 'DISABLED'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toxic 5: Packet Loss */}
+            <div className={`p-4 border transition-all ${
+              packetLossEnabled ? 'bg-[#080B10] border-[#FF5C6C]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <FileWarning className="w-4 h-4 text-[#FF5C6C]" />
+                    <span>05 // PACKET_LOSS</span>
+                  </div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Probabilistic write drop</span>
+                </div>
+                <button
+                  onClick={() => setPacketLossEnabled(!packetLossEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center border ${
+                    packetLossEnabled ? 'bg-[#FF5C6C] border-[#FF5C6C]' : 'bg-[#161B22] border-[#21262D]'
+                  }`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] transition-transform ${
+                    packetLossEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-[11px] text-[#8B949E]">DROP:</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={packetLossPercent}
+                    onChange={(e) => setPacketLossPercent(parseInt(e.target.value) || 0)}
+                    disabled={!packetLossEnabled}
+                    className="bg-[#161B22] border border-[#21262D] px-2 py-1 text-xs w-20 disabled:opacity-40"
+                  />
+                  <span className="text-[#8B949E] text-[11px]">%</span>
+                </div>
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={packetLossEnabled ? 'text-[#FF5C6C] font-bold' : 'text-[#8B949E]'}>
+                    {packetLossEnabled ? `${packetLossPercent}% DROP` : 'DISABLED'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Toxic 6: Blackhole Mode */}
+            <div className={`p-4 border transition-all ${
+              blackholeEnabled ? 'bg-[#080B10] border-[#FF5C6C] shadow-[0_0_15px_rgba(255,92,108,0.2)]' : 'bg-[#080B10]/60 border-[#21262D]'
+            }`}>
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#E6EDF3]">
+                    <XCircle className="w-4 h-4 text-[#FF5C6C]" />
+                    <span>06 // BLACKHOLE_MODE</span>
+                  </div>
+                  <span className="text-[10px] text-[#8B949E] block mt-0.5">Infinite write hang partition</span>
+                </div>
+                <button
+                  onClick={() => setBlackholeEnabled(!blackholeEnabled)}
+                  className={`relative inline-flex h-5 w-10 items-center border ${
+                    blackholeEnabled ? 'bg-[#FF5C6C] border-[#FF5C6C]' : 'bg-[#161B22] border-[#21262D]'
+                  }`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform bg-[#080B10] transition-transform ${
+                    blackholeEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#161B22]">
+                <div className="text-[11px] text-[#FF5C6C] flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  <span>FREEZES ALL WRITE GOROUTINES</span>
+                </div>
+                <div className="text-[10px] flex justify-between text-[#8B949E]">
+                  <span>STATUS:</span>
+                  <span className={blackholeEnabled ? 'text-[#FF5C6C] font-bold animate-pulse' : 'text-[#8B949E]'}>
+                    {blackholeEnabled ? 'PARTITION_ACTIVE' : 'DISABLED'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Per-Proxy Mock view */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Targeted Proxies</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {proxies.map(proxy => (
-            <div key={proxy.id} className="glass-panel overflow-hidden flex flex-col transition-all hover:border-primary/50 opacity-80">
-              <div className="p-5 border-b border-card-border flex items-start justify-between">
+      {/* Target Proxies Terminal Grid */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#21262D]">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#E6EDF3]">Targeted Proxies</h3>
+          <span className="text-[11px] text-[#8B949E]">CONFIGURED_NODES: {proxies.length}</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {proxies.map((proxy) => (
+            <div key={proxy.id} className="bg-[#0D1117] border border-[#21262D] p-4 flex flex-col justify-between">
+              <div className="flex items-start justify-between pb-3 border-b border-[#21262D]">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <ShieldAlert className={`w-4 h-4 ${proxy.status === 'active' ? 'text-success' : 'text-foreground/40'}`} />
-                    <h3 className="font-semibold text-lg">{proxy.id}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${proxy.status === 'active' ? 'bg-[#39FF88]' : 'bg-[#8B949E]'}`} />
+                    <span className="font-bold text-sm text-[#E6EDF3]">{proxy.id}</span>
                   </div>
-                  <div className="text-xs text-foreground/50 font-mono">
-                    {proxy.config.listenAddr} → {proxy.config.targetUrl}
+                  <div className="text-xs text-[#00D9FF] mt-1 font-mono">
+                    {proxy.config.listenAddr} ──▶ {proxy.config.targetUrl}
                   </div>
                 </div>
-                <button 
+
+                <button
                   onClick={() => toggleProxyStatus(proxy.id)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    proxy.status === 'active' 
-                      ? 'bg-destructive/10 text-destructive hover:bg-destructive/20' 
-                      : 'bg-success/10 text-success hover:bg-success/20'
+                  title={`Toggle ${proxy.id}`}
+                  className={`p-1.5 border transition-colors ${
+                    proxy.status === 'active'
+                      ? 'border-[#FF5C6C]/40 bg-[#FF5C6C]/10 text-destructive hover:bg-[#FF5C6C]/20'
+                      : 'border-[#39FF88]/40 bg-[#39FF88]/10 text-success hover:bg-[#39FF88]/20'
                   }`}
                 >
-                  {proxy.status === 'active' ? <Square className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
+                  {proxy.status === 'active' ? (
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
                 </button>
               </div>
-              
-              <div className="p-5 flex-1 bg-card/50">
-                <h4 className="text-sm font-medium mb-4 flex items-center gap-2 text-foreground/80">
-                  <Zap className="w-4 h-4 text-primary" />
-                  Active TCP Faults
-                </h4>
-                
-                {config?.latency_enabled ? (
-                  <div className="space-y-3">
-                      <div className="bg-background rounded-lg p-3 border border-primary/30 bg-primary/5 text-sm flex items-center justify-between">
-                        <div className="flex items-center gap-2 capitalize">
-                          {getFaultIcon('latency')}
-                          <span className="font-medium text-primary">Global Latency</span>
-                        </div>
-                        <div className="text-xs text-primary/80 font-mono text-right">
-                          <div>100% probability</div>
-                          <div>{config.latency_delay_ms}ms delay</div>
-                        </div>
-                      </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-foreground/40 italic flex items-center justify-center h-20 border border-dashed border-card-border rounded-lg">
-                    No active faults
-                  </div>
-                )}
+
+              <div className="pt-3 text-[11px] flex justify-between items-center text-[#8B949E]">
+                <span>STREAM_STATE:</span>
+                <span className={`font-bold ${proxy.status === 'active' ? 'text-[#39FF88]' : 'text-[#8B949E]'}`}>
+                  [{proxy.status.toUpperCase()}]
+                </span>
               </div>
             </div>
           ))}

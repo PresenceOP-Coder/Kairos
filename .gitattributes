@@ -13,3 +13,10 @@ Dockerfile* text eol=lf
 Makefile text eol=lf
 .gitignore text eol=lf
 .dockerignore text eol=lf
+
+# GitHub Linguist language statistics overrides (highlight Go core)
+web/** linguist-detectable=false
+*.html linguist-detectable=false
+*.ts linguist-detectable=false
+*.tsx linguist-detectable=false
+*.css linguist-detectable=false

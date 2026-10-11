@@ -1,62 +1,102 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   
-  /* Kairos Modern Dark Theme */
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
+  /* Kairos Cyberpunk Terminal Palette */
+  --color-background: #080B10;
+  --color-foreground: #E6EDF3;
   
-  --color-card: #18181b;
-  --color-card-border: #27272a;
+  --color-card: #0D1117;
+  --color-card-border: #21262D;
+  --color-card-header: #161B22;
   
-  --color-primary: #8b5cf6;
-  --color-primary-hover: #7c3aed;
-  --color-primary-foreground: #ffffff;
+  /* Neon Accents */
+  --color-primary: #39FF88;
+  --color-primary-hover: #2ee677;
+  --color-primary-foreground: #080B10;
   
-  --color-secondary: #27272a;
-  --color-secondary-hover: #3f3f46;
-  --color-secondary-foreground: #fafafa;
+  --color-secondary: #1F242C;
+  --color-secondary-hover: #2D333B;
+  --color-secondary-foreground: #E6EDF3;
   
-  --color-destructive: #ef4444;
-  --color-destructive-hover: #dc2626;
+  --color-cyan: #00D9FF;
+  --color-purple: #B388FF;
+  --color-amber: #FFB454;
+  --color-destructive: #FF5C6C;
+  --color-destructive-hover: #e04857;
   
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
+  --color-success: #39FF88;
+  --color-warning: #FFB454;
+  --color-terminal-dim: #8B949E;
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
   }
 
-  /* Custom Scrollbar */
+  /* Scanline subtle texture effect for terminal aesthetic */
+  body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
+    z-index: 9999;
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  /* Custom Monospace Terminal Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: #080B10;
   }
   ::-webkit-scrollbar-thumb {
-    background: #3f3f46;
-    border-radius: 4px;
+    background: #21262D;
+    border: 1px solid #30363D;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #52525b;
+    background: #39FF88;
   }
 }
 
 @layer utilities {
+  .terminal-panel {
+    background: #0D1117;
+    border: 1px solid #21262D;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7);
+  }
+  .terminal-panel-glow {
+    border-color: #39FF88;
+    box-shadow: 0 0 15px -3px rgba(57, 255, 136, 0.2);
+  }
   .glass-panel {
-    background: var(--color-card);
-    border: 1px solid var(--color-card-border);
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    background: #0D1117;
+    border: 1px solid #21262D;
+  }
+  .text-neon {
+    color: #39FF88;
+    text-shadow: 0 0 10px rgba(57, 255, 136, 0.4);
+  }
+  .text-cyan {
+    color: #00D9FF;
+  }
+  .text-purple {
+    color: #B388FF;
+  }
+  .text-amber {
+    color: #FFB454;
   }
 }
