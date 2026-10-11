@@ -42,13 +42,12 @@ func startProxy(t *testing.T, p *Proxy) {
 			// Expected when stopped
 		}
 	}()
-	for i := 0; i < 50; i++ {
-		if p.listener != nil {
-			return
-		}
-		time.Sleep(10 * time.Millisecond)
+	select {
+	case <-p.Ready():
+		return
+	case <-time.After(2 * time.Second):
+		t.Fatalf("proxy listener failed to start")
 	}
-	t.Fatalf("proxy listener failed to start")
 }
 
 func TestProxy_BasicForwardingAndMetrics(t *testing.T) {
@@ -64,7 +63,7 @@ func TestProxy_BasicForwardingAndMetrics(t *testing.T) {
 	defer p.Stop()
 
 	// Connect to proxy
-	client, err := net.Dial("tcp", p.listener.Addr().String())
+	client, err := net.Dial("tcp", p.Addr())
 	if err != nil {
 		t.Fatalf("failed to connect to proxy: %v", err)
 	}
@@ -118,7 +117,7 @@ func TestProxy_FailedTarget(t *testing.T) {
 	startProxy(t, p)
 	defer p.Stop()
 
-	client, err := net.Dial("tcp", p.listener.Addr().String())
+	client, err := net.Dial("tcp", p.Addr())
 	if err != nil {
 		t.Fatalf("failed to connect to proxy: %v", err)
 	}
@@ -161,7 +160,7 @@ func TestProxy_MultipleSimultaneousConnections(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		go func(id int) {
 			defer wg.Done()
-			client, err := net.Dial("tcp", p.listener.Addr().String())
+			client, err := net.Dial("tcp", p.Addr())
 			if err != nil {
 				t.Errorf("failed to connect: %v", err)
 				return
@@ -205,7 +204,7 @@ func TestProxy_MiddlewareIntegration(t *testing.T) {
 	startProxy(t, p)
 	defer p.Stop()
 
-	client, err := net.Dial("tcp", p.listener.Addr().String())
+	client, err := net.Dial("tcp", p.Addr())
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
@@ -233,7 +232,7 @@ func TestProxy_HalfClose(t *testing.T) {
 	startProxy(t, p)
 	defer p.Stop()
 
-	client, err := net.Dial("tcp", p.listener.Addr().String())
+	client, err := net.Dial("tcp", p.Addr())
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}

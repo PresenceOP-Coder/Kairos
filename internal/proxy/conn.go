@@ -17,8 +17,12 @@ type Connection struct {
 }
 
 func (p *Proxy) acceptLoop() error {
+	p.mu.RLock()
+	ln := p.listener
+	p.mu.RUnlock()
+
 	for {
-		conn, err := p.listener.Accept()
+		conn, err := ln.Accept()
 
 		if err != nil {
 			return err
@@ -62,16 +66,15 @@ func (p *Proxy) handleConn(client net.Conn) {
 	wrappedClient := client
 	wrappedTarget := target
 
+	p.mu.RLock()
 	applyChaos := p.trigger == nil || p.trigger.ShouldApply()
-
 	if applyChaos {
-		p.mu.RLock()
 		for _, m := range p.middleware {
 			wrappedClient = m.Wrap(wrappedClient)
 			wrappedTarget = m.Wrap(wrappedTarget)
 		}
-		p.mu.RUnlock()
 	}
+	p.mu.RUnlock()
 
 	var wg sync.WaitGroup
 
