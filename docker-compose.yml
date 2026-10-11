@@ -1,0 +1,23 @@
+
+services:
+  target-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.target
+    ports:
+      - "9001:9001"
+
+  kairos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      KAIROS_TARGET: target-server:9001
+    depends_on:
+      - target-server
+    ports:
+      - "9000:9000"
+      - "8081:8080"
+    command:
+      - run
+      - /app/scenarios/blackhole.json

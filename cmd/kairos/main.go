@@ -3,6 +3,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
 	"github.com/shreyasprajapti/kairos/internal/config"
@@ -43,7 +44,12 @@ func main() {
 			scheduler.Run(s)
 
 			// Wire up the proxy.
-			p, err := proxy.NewProxy(":9000", "localhost:9001")
+			targetAddr := os.Getenv("KAIROS_TARGET")
+			if targetAddr == "" {
+				targetAddr = "localhost:9001"
+			}
+
+			p, err := proxy.NewProxy(":9000", targetAddr)
 			if err != nil {
 				return err
 			}

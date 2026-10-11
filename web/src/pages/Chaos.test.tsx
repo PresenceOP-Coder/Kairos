@@ -121,7 +121,7 @@ describe('Chaos Component', () => {
     // initially proxy-1 is active (renders Square icon button since status='active', wait it toggles it)
     // we can find the proxy-1 text and the button next to it
     expect(screen.getByText('proxy-1')).toBeInTheDocument();
-    
+
     // There are multiple buttons. We can find the one in the same container, or by test id. 
     // The button has no aria-label, but we can query by nearest class or just queryAllByRole
     // Since proxy-1 is the first proxy card, it should be one of the buttons
@@ -129,7 +129,7 @@ describe('Chaos Component', () => {
     // We can rely on the fact that when status is active, it has text-destructive class for the button
     const stopButtons = screen.getAllByRole('button').filter(b => b.className.includes('text-destructive'));
     expect(stopButtons.length).toBeGreaterThan(0);
-    
+
     fireEvent.click(stopButtons[0]);
 
     // After click, it should become active (Play icon, text-success class)
