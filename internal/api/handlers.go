@@ -58,7 +58,12 @@ func (s *Server) latencyHandler(w http.ResponseWriter, r *http.Request) {
 	var req LatencyRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "json error", http.StatusBadRequest)
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.DelayMS < 0 {
+		http.Error(w, "delay_ms cannot be negative", http.StatusBadRequest)
 		return
 	}
 

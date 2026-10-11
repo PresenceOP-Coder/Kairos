@@ -4,6 +4,8 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/shreyasprajapti/kairos/internal/api"
 	"github.com/shreyasprajapti/kairos/internal/config"
@@ -71,6 +73,15 @@ func main() {
 				if err := apiServer.Start(":8080"); err != nil {
 					log.Printf("API server error: %v", err)
 				}
+			}()
+
+			// Handle graceful shutdown on interrupt/termination signal
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+			go func() {
+				<-sigChan
+				log.Println("Shutting down Kairos gracefully...")
+				_ = p.Stop()
 			}()
 
 			log.Println("Starting Kairos...")

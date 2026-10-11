@@ -182,6 +182,17 @@ func TestLatencyHandler(t *testing.T) {
 			t.Errorf("Expected Bad Request for invalid JSON, got %v", rr.Code)
 		}
 	})
+
+	t.Run("Negative Delay", func(t *testing.T) {
+		reqBody := `{"enabled": true, "delay_ms": -100}`
+		req := httptest.NewRequest(http.MethodPost, "/chaos/latency", bytes.NewBufferString(reqBody))
+		rr := httptest.NewRecorder()
+		server.routes().ServeHTTP(rr, req)
+
+		if rr.Code != http.StatusBadRequest {
+			t.Errorf("Expected Bad Request for negative delay, got %v", rr.Code)
+		}
+	})
 }
 
 func TestChaosHandler(t *testing.T) {

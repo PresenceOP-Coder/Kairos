@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -25,6 +26,9 @@ func (p *Proxy) acceptLoop() error {
 		conn, err := ln.Accept()
 
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return nil
+			}
 			return err
 		}
 

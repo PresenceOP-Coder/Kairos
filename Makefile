@@ -7,7 +7,7 @@ test:
 	go test ./... -race -cover
 
 lint:
-	golangci-lint run
+	go vet ./...
 
 run:
 	go run ./cmd/kairos

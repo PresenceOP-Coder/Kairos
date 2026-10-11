@@ -147,3 +147,51 @@ func TestLoad_Trigger(t *testing.T) {
 		)
 	}
 }
+
+func TestLoad_ValidationErrors(t *testing.T) {
+	testCases := []struct {
+		name string
+		json string
+	}{
+		{
+			name: "invalid after duration",
+			json: `{"steps": [{"after": "not-a-duration", "latency": {"enabled": true, "delay_ms": 100}}]}`,
+		},
+		{
+			name: "negative delay",
+			json: `{"latency": {"enabled": true, "delay_ms": -50}}`,
+		},
+		{
+			name: "jitter min greater than max",
+			json: `{"jitter": {"enabled": true, "min_ms": 500, "max_ms": 100}}`,
+		},
+		{
+			name: "packet loss greater than 100",
+			json: `{"packet_loss": {"enabled": true, "percent": 150}}`,
+		},
+		{
+			name: "negative every_nth_connection",
+			json: `{"trigger": {"every_nth_connection": -1}}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			file, err := os.CreateTemp("", "kairos-val-*.json")
+			if err != nil {
+				t.Fatalf("failed to create temp file: %v", err)
+			}
+			defer os.Remove(file.Name())
+
+			if _, err := file.WriteString(tc.json); err != nil {
+				t.Fatalf("failed to write scenario: %v", err)
+			}
+			file.Close()
+
+			_, err = Load(file.Name())
+			if err == nil {
+				t.Errorf("expected validation error for case %q, got nil", tc.name)
+			}
+		})
+	}
+}
