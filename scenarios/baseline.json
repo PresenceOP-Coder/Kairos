@@ -1,0 +1,6 @@
+{
+  "latency": {
+    "enabled": false,
+    "delay_ms": 0
+  }
+}

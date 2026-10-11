@@ -20,4 +20,4 @@ services:
       - "8081:8080"
     command:
       - run
-      - /app/scenarios/blackhole.json
+      - /app/scenarios/baseline.json
