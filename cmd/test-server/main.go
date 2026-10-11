@@ -44,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Proxy failed to initialize: %v", err)
 	}
-	
+
 	// Ensure we register middlewares
 	p.Use(middleware.NewLatencyMiddleware(cfg))
 	p.Use(middleware.NewResetMiddleware(cfg))
@@ -52,14 +52,14 @@ func main() {
 	p.Use(middleware.NewJitterMiddleware(cfg))
 	p.Use(middleware.NewBlackholeMiddleware(cfg))
 	p.Use(middleware.NewPacketLossMiddleware(cfg))
-	
+
 	go p.Start()
 	defer p.Stop()
 	log.Printf("Proxy Server listening on 127.0.0.1:9000")
 
 	// 3. Start API Server on 8080
 	apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
-	
+
 	go func() {
 		log.Printf("API Server listening on 127.0.0.1:8080")
 		if err := apiServer.Start("127.0.0.1:8080"); err != nil && err != http.ErrServerClosed {

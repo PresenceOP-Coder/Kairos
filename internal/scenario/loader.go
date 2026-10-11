@@ -5,8 +5,6 @@ import (
 	"os"
 )
 
-
-
 func Load(path string) (*Scenario, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

@@ -24,4 +24,8 @@ coverage.out
 developer_notes.md
 structure.txt
 
+# Playwright
+web/playwright-report/
+web/test-results/
+
 tmp

@@ -38,7 +38,6 @@ func NewChaosConfig() *ChaosConfig {
 	}
 }
 
-
 func (c *ChaosConfig) GetLatency() (bool, time.Duration) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -53,7 +52,6 @@ func (c *ChaosConfig) SetLatency(enabled bool, delay time.Duration) {
 	c.LatencyEnabled = enabled
 	c.LatencyDelay = delay
 }
-
 
 func (c *ChaosConfig) GetJitter() (bool, time.Duration, time.Duration) {
 	c.mu.RLock()
@@ -71,7 +69,6 @@ func (c *ChaosConfig) SetJitter(enabled bool, min, max time.Duration) {
 	c.JitterMax = max
 }
 
-
 func (c *ChaosConfig) GetBandwidth() (bool, int64) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -86,7 +83,6 @@ func (c *ChaosConfig) SetBandwidth(enabled bool, rate int64) {
 	c.BandwidthEnabled = enabled
 	c.BandwidthRate = rate
 }
-
 
 func (c *ChaosConfig) GetReset() (bool, time.Duration) {
 	c.mu.RLock()
@@ -103,7 +99,6 @@ func (c *ChaosConfig) SetReset(enabled bool, after time.Duration) {
 	c.ResetAfter = after
 }
 
-
 func (c *ChaosConfig) GetPacketLoss() (bool, int) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -119,15 +114,14 @@ func (c *ChaosConfig) SetPacketLoss(enabled bool, percent int) {
 	c.PacketLossPercent = percent
 }
 
-
-func (c *ChaosConfig) SetBlackhole(enabled bool){
+func (c *ChaosConfig) SetBlackhole(enabled bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.blackholeEnabled = enabled
 }
 
-func (c * ChaosConfig) GetBlackhole() bool{
+func (c *ChaosConfig) GetBlackhole() bool {
 	c.mu.RLock()
 
 	defer c.mu.RUnlock()

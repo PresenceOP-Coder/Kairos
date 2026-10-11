@@ -2,13 +2,12 @@ package proxy
 
 import "sync"
 
-
-type Registry struct{
-	mu sync.Mutex
+type Registry struct {
+	mu          sync.Mutex
 	connections map[uint64]*Connection
 }
 
-func NewRegistry() *Registry{
+func NewRegistry() *Registry {
 	return &Registry{
 		connections: make(map[uint64]*Connection),
 	}

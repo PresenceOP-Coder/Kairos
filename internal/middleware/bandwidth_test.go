@@ -47,31 +47,31 @@ func TestBandwidthMiddleware_AddsDelay(t *testing.T) {
 }
 
 func TestBandwidthMiddleware_Disabled(t *testing.T) {
-    cfg := config.NewChaosConfig()
-    cfg.SetBandwidth(false, 1000)
+	cfg := config.NewChaosConfig()
+	cfg.SetBandwidth(false, 1000)
 
-    middleware := NewBandwidthMiddleware(cfg)
+	middleware := NewBandwidthMiddleware(cfg)
 
-    conn := &mockConn{}
-    wrappedConn := middleware.Wrap(conn)
+	conn := &mockConn{}
+	wrappedConn := middleware.Wrap(conn)
 
-    message := make([]byte, 1000)
+	message := make([]byte, 1000)
 
-    start := time.Now()
+	start := time.Now()
 
-    n, err := wrappedConn.Write(message)
+	n, err := wrappedConn.Write(message)
 
-    elapsed := time.Since(start)
+	elapsed := time.Since(start)
 
-    if err != nil {
-        t.Fatalf("unexpected write error: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("unexpected write error: %v", err)
+	}
 
-    if n != len(message) {
-        t.Fatalf("expected to write %d bytes, got %d", len(message), n)
-    }
+	if n != len(message) {
+		t.Fatalf("expected to write %d bytes, got %d", len(message), n)
+	}
 
-    if elapsed >= 100*time.Millisecond {
-        t.Errorf("expected bandwidth throttling to be disabled, got %v", elapsed)
-    }
+	if elapsed >= 100*time.Millisecond {
+		t.Errorf("expected bandwidth throttling to be disabled, got %v", elapsed)
+	}
 }

@@ -59,7 +59,7 @@ func TestProxy_BasicForwardingAndMetrics(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create proxy: %v", err)
 	}
-	
+
 	startProxy(t, p)
 	defer p.Stop()
 
@@ -114,7 +114,7 @@ func TestProxy_FailedTarget(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create proxy: %v", err)
 	}
-	
+
 	startProxy(t, p)
 	defer p.Stop()
 
@@ -122,9 +122,9 @@ func TestProxy_FailedTarget(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to proxy: %v", err)
 	}
-	
+
 	client.Write([]byte("test"))
-	
+
 	buf := make([]byte, 10)
 	_, err = client.Read(buf)
 	if err == nil {
@@ -150,7 +150,7 @@ func TestProxy_MultipleSimultaneousConnections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create proxy: %v", err)
 	}
-	
+
 	startProxy(t, p)
 	defer p.Stop()
 
@@ -200,7 +200,7 @@ func TestProxy_MiddlewareIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create proxy: %v", err)
 	}
-	
+
 	p.Use(middleware.NewLatencyMiddleware(cfg))
 	startProxy(t, p)
 	defer p.Stop()
@@ -239,7 +239,7 @@ func TestProxy_HalfClose(t *testing.T) {
 	}
 
 	client.Write([]byte("half"))
-	
+
 	if tcp, ok := client.(*net.TCPConn); ok {
 		tcp.CloseWrite()
 	}
@@ -254,6 +254,6 @@ func TestProxy_HalfClose(t *testing.T) {
 	if err != io.EOF {
 		t.Errorf("Expected EOF, got %v", err)
 	}
-	
+
 	client.Close()
 }

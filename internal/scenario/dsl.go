@@ -1,25 +1,25 @@
 package scenario
 
 type Step struct {
-    After string `json:"after"`
+	After string `json:"after"`
 
-    Latency   *LatencyScenario   `json:"latency,omitempty"`
-    Jitter    *JitterScenario    `json:"jitter,omitempty"`
-    Bandwidth *BandwidthScenario `json:"bandwidth,omitempty"`
-    Reset     *ResetScenario     `json:"reset,omitempty"`
-    PacketLoss *PacketLossScenario `json:"packet_loss,omitempty"`
-    Blackhole *BlackholeScenario `json:"blackhole,omitempty"`
+	Latency    *LatencyScenario    `json:"latency,omitempty"`
+	Jitter     *JitterScenario     `json:"jitter,omitempty"`
+	Bandwidth  *BandwidthScenario  `json:"bandwidth,omitempty"`
+	Reset      *ResetScenario      `json:"reset,omitempty"`
+	PacketLoss *PacketLossScenario `json:"packet_loss,omitempty"`
+	Blackhole  *BlackholeScenario  `json:"blackhole,omitempty"`
 }
 type Scenario struct {
-    Trigger Trigger `json:"trigger"`
+	Trigger Trigger `json:"trigger"`
 
-    Latency   LatencyScenario   `json:"latency"`
-    Jitter    JitterScenario    `json:"jitter"`
-    Bandwidth BandwidthScenario `json:"bandwidth"`
-    Reset     ResetScenario     `json:"reset"`
-    PacketLoss PacketLossScenario `json:"packet_loss"`
-    Blackhole BlackholeScenario `json:"blackhole"`
-    Steps []Step `json:"steps"`
+	Latency    LatencyScenario    `json:"latency"`
+	Jitter     JitterScenario     `json:"jitter"`
+	Bandwidth  BandwidthScenario  `json:"bandwidth"`
+	Reset      ResetScenario      `json:"reset"`
+	PacketLoss PacketLossScenario `json:"packet_loss"`
+	Blackhole  BlackholeScenario  `json:"blackhole"`
+	Steps      []Step             `json:"steps"`
 }
 type LatencyScenario struct {
 	Enabled bool `json:"enabled"`
@@ -48,11 +48,10 @@ type PacketLossScenario struct {
 }
 
 type Trigger struct {
-    EveryNthConnection int `json:"every_nth_connection,omitempty"`
-    AfterRequests      int `json:"after_requests,omitempty"`
+	EveryNthConnection int `json:"every_nth_connection,omitempty"`
+	AfterRequests      int `json:"after_requests,omitempty"`
 }
 
-type BlackholeScenario struct{
-    Enabled bool `json:"enabled"`
+type BlackholeScenario struct {
+	Enabled bool `json:"enabled"`
 }
-

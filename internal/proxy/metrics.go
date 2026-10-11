@@ -37,31 +37,30 @@ func (m *Metrics) IncActiveConnections() {
 	atomic.AddUint64(&m.activeConnections, 1)
 }
 
-func (m *Metrics) DecActiveConnections(){
+func (m *Metrics) DecActiveConnections() {
 	atomic.AddUint64(&m.activeConnections, ^uint64(0))
 }
 
-
-func (m *Metrics) IncFailedConnections(){
-	atomic.AddUint64(&m.failedConnections,1)
+func (m *Metrics) IncFailedConnections() {
+	atomic.AddUint64(&m.failedConnections, 1)
 }
 
-func (m *Metrics) AddBytesSent(n uint64){
-	atomic.AddUint64(&m.byteSent,n)
+func (m *Metrics) AddBytesSent(n uint64) {
+	atomic.AddUint64(&m.byteSent, n)
 }
 
-func (m *Metrics) AddBytesReceived(n uint64){
-	atomic.AddUint64(&m.byteReceived,n)
+func (m *Metrics) AddBytesReceived(n uint64) {
+	atomic.AddUint64(&m.byteReceived, n)
 
 }
 
-func (m *Metrics) Snapshot() MetricsSnapshot{
+func (m *Metrics) Snapshot() MetricsSnapshot {
 	return MetricsSnapshot{
-		Uptime: time.Since(m.startedAt),
-		TotalConnections: atomic.LoadUint64(&m.totalConnections),
+		Uptime:            time.Since(m.startedAt),
+		TotalConnections:  atomic.LoadUint64(&m.totalConnections),
 		ActiveConnections: atomic.LoadUint64(&m.activeConnections),
 		FailedConnections: atomic.LoadUint64(&m.failedConnections),
-		BytesSent: atomic.LoadUint64(&m.byteSent),
-		BytesReceived: atomic.LoadUint64(&m.byteReceived),
+		BytesSent:         atomic.LoadUint64(&m.byteSent),
+		BytesReceived:     atomic.LoadUint64(&m.byteReceived),
 	}
 }

@@ -63,7 +63,7 @@ func TestE2E_ProxyWithControlPlane(t *testing.T) {
 
 	// 2. Setup HTTP API
 	apiServer := api.NewServer(p.Registry(), p.Metrics(), cfg)
-	
+
 	go func() {
 		if err := apiServer.Start(apiAddr); err != nil && err != http.ErrServerClosed {
 			// Ignore server closed errors
@@ -76,7 +76,7 @@ func TestE2E_ProxyWithControlPlane(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to connect to proxy: %v", err)
 	}
-	
+
 	start := time.Now()
 	client.Write([]byte("ping"))
 	buf := make([]byte, 4)
@@ -99,13 +99,13 @@ func TestE2E_ProxyWithControlPlane(t *testing.T) {
 	}
 
 	// 5. Verify Latency behavior
-	// Note: Our trigger is set to EveryNthConnection=2. 
+	// Note: Our trigger is set to EveryNthConnection=2.
 	// The previous connection was #1. This next one is #2, so it will trigger the scenario/middleware!
 	client2, err := net.Dial("tcp", proxyAddr)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
 	}
-	
+
 	start = time.Now()
 	client2.Write([]byte("pong"))
 	io.ReadFull(client2, buf)
@@ -130,7 +130,7 @@ func TestE2E_ProxyWithControlPlane(t *testing.T) {
 	// 6. Test Scenario execution
 	eng := scenario.NewEngine(cfg)
 	sched := scenario.NewScheduler(eng)
-	
+
 	// Create a dummy scenario
 	scen := &scenario.Scenario{
 		Steps: []scenario.Step{
@@ -140,7 +140,7 @@ func TestE2E_ProxyWithControlPlane(t *testing.T) {
 			},
 		},
 	}
-	
+
 	sched.Run(scen)
 	time.Sleep(150 * time.Millisecond) // Wait for step to apply
 

@@ -46,27 +46,27 @@ func TestPacketLossMiddleware_DropsPacket(t *testing.T) {
 }
 
 func TestPacketLossMiddleware_Disabled(t *testing.T) {
-    cfg := config.NewChaosConfig()
-    cfg.SetPacketLoss(false, 100)
+	cfg := config.NewChaosConfig()
+	cfg.SetPacketLoss(false, 100)
 
-    conn := &packetLossMockConn{}
+	conn := &packetLossMockConn{}
 
-    middleware := NewPacketLossMiddleware(cfg)
-    wrappedConn := middleware.Wrap(conn)
+	middleware := NewPacketLossMiddleware(cfg)
+	wrappedConn := middleware.Wrap(conn)
 
-    message := []byte("hello")
+	message := []byte("hello")
 
-    n, err := wrappedConn.Write(message)
+	n, err := wrappedConn.Write(message)
 
-    if err != nil {
-        t.Fatalf("unexpected write error: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("unexpected write error: %v", err)
+	}
 
-    if n != len(message) {
-        t.Fatalf("expected Write to report %d bytes, got %d", len(message), n)
-    }
+	if n != len(message) {
+		t.Fatalf("expected Write to report %d bytes, got %d", len(message), n)
+	}
 
-    if !conn.written {
-        t.Error("expected packet to be written, but underlying connection was not called")
-    }
+	if !conn.written {
+		t.Error("expected packet to be written, but underlying connection was not called")
+	}
 }

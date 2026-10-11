@@ -62,7 +62,7 @@ func TestConnectionsHandler_Empty(t *testing.T) {
 
 func TestConnectionsHandler_WithConnections(t *testing.T) {
 	server := setupTestServer()
-	
+
 	c1, c2 := net.Pipe()
 	defer c1.Close()
 	defer c2.Close()

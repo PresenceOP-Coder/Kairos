@@ -11,7 +11,6 @@ type Scheduler struct {
 	engine *Engine
 }
 
-
 type Engine struct {
 	config *config.ChaosConfig
 }
@@ -104,7 +103,7 @@ func (e *Engine) ApplyStep(step Step) {
 		log.Printf("[Scheduler] Applied PacketLoss: enabled=%v, percent=%d%%", step.PacketLoss.Enabled, step.PacketLoss.Percent)
 	}
 
-	if step.Blackhole != nil{
+	if step.Blackhole != nil {
 		e.config.SetBlackhole(
 			step.Blackhole.Enabled,
 		)

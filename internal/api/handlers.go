@@ -49,7 +49,7 @@ func (s *Server) statsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server)latencyHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) latencyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusBadRequest)
 		return
@@ -71,7 +71,7 @@ func (s *Server)latencyHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(
 		map[string]string{
-			"status":"updated",
+			"status": "updated",
 		},
 	)
 }

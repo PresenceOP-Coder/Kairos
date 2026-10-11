@@ -1,3 +1,4 @@
+
 {
   "name": "web",
   "private": true,
@@ -7,6 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "vitest run --config vite.config.ts",
+    "test:e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {

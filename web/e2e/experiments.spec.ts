@@ -8,12 +8,6 @@ test.describe('Experiments E2E', () => {
   });
 
   test('Filter experiments', async ({ page }) => {
-    // Wait for experiments to load. 
-    // The mock API returns an empty array by default unless seeded.
-    // If it's empty, we'll see "No experiments found."
-    const noExps = page.getByText('No experiments found.');
-    const hasExps = page.locator('.group'); // experiment nodes
-    
     // We just verify the filter buttons work without crashing
     const completedBtn = page.getByRole('button', { name: 'completed' });
     await completedBtn.click();

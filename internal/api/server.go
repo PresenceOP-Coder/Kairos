@@ -17,7 +17,7 @@ func NewServer(registry *proxy.Registry, metrics *proxy.Metrics, config *config.
 	return &Server{
 		registry: registry,
 		metrics:  metrics,
-		config : config,
+		config:   config,
 	}
 }
 

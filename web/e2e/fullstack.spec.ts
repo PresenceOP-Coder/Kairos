@@ -34,7 +34,7 @@ test.describe('Full-stack E2E', () => {
         client.write('ping');
       });
 
-      client.on('data', (data) => {
+      client.on('data', () => {
         const elapsed = Date.now() - start;
         client.destroy();
         resolve(elapsed);
@@ -61,7 +61,7 @@ test.describe('Full-stack E2E', () => {
         client.write('ping2');
       });
 
-      client.on('data', (data) => {
+      client.on('data', () => {
         const elapsed = Date.now() - start2;
         client.destroy();
         resolve(elapsed);
