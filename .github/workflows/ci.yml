@@ -65,6 +65,51 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+  e2e:
+    name: Playwright E2E tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Start backend test servers
+        run: |
+          go run ./cmd/test-server &
+          echo $! > test-server.pid
+          sleep 3
+
+      - name: Run Playwright tests
+        working-directory: web
+        run: npx playwright test
+
+      - name: Cleanup test servers
+        if: always()
+        run: |
+          if [ -f test-server.pid ]; then
+            kill $(cat test-server.pid) 2>/dev/null || true
+          fi
+
   docker:
     name: Docker image builds
     runs-on: ubuntu-latest
