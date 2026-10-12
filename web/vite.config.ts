@@ -34,6 +34,14 @@ export default defineConfig({
       '/chaos': {
         target: 'http://127.0.0.1:8080',
         changeOrigin: true,
+      },
+      '/scenarios': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
+      '/experiments': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
       }
     }
   }

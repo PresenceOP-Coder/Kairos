@@ -86,16 +86,22 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to view syst
 
 ## Docker Compose Quick Start
 
-To run Kairos and the target server together in Docker containers:
+To run the complete Kairos stack (React web dashboard, Kairos proxy/API, and TCP echo target) together in Docker containers:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
+
+Services started:
+- **Web Dashboard**: [http://localhost:5173](http://localhost:5173) (includes built-in API reverse proxy)
+- **Kairos Proxy**: `localhost:9000`
+- **Control API**: `http://localhost:8081` (also accessible via `http://localhost:5173/health`)
+- **Echo Target Server**: `localhost:9001`
 
 Verify services are running:
 ```bash
 docker compose ps
-curl http://localhost:8081/health
+curl http://localhost:5173/health
 ```
 
 Stop the containers when finished:

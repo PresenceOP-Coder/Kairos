@@ -31,8 +31,15 @@ export interface LatencyRequest {
 }
 
 class KairosApiClient {
+  private baseUrl: string;
+
+  constructor() {
+    this.baseUrl = (import.meta.env?.VITE_API_URL || '').replace(/\/$/, '');
+  }
+
   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(endpoint, {
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',

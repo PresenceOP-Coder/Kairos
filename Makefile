@@ -12,5 +12,8 @@ lint:
 run:
 	go run ./cmd/kairos
 
+test-server:
+	go run ./cmd/test-server
+
 clean:
 	rm -rf bin/

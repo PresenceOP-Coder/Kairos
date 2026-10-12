@@ -33,7 +33,7 @@ export function Experiments() {
                 onClick={() => setFilter(f as any)}
                 className={`px-3 py-1 font-bold transition-colors ${
                   filter === f 
-                    ? 'bg-[#161B22] text-[#39FF88] border border-[#39FF88]/40 shadow-sm' 
+                    ? 'bg-primary/20 text-[#39FF88] border border-[#39FF88]/40 shadow-sm' 
                     : 'text-[#8B949E] hover:text-[#E6EDF3]'
                 }`}
               >

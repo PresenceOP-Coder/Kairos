@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "go run ../cmd/test-server",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run --config vite.config.ts",
